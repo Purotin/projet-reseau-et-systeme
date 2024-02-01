@@ -1,0 +1,5 @@
+matplotlib
+numpy
+pygame
+noise
+tkinter

@@ -1,0 +1,102 @@
+# Readme
+
+isometrie : <https://pikuma.com/blog/isometric-projection-in-games>
+
+important : north is upper right
+
+zoom :
+
+    - <https://archive.is/20201226195806/https://medium.com/@benjamin.botto/zooming-at-the-mouse-coordinates-with-affine-transformations-86e7312fd50b#selection-679.0-721.28>
+
+    - <https://gamedev.stackexchange.com/questions/9330/zoom-to-cursor-calculation>
+
+-------------------------------------------------------------------------------
+
+
+Dans ce fichier, les elements importants à prendre en considération dans chaque parties 
+ et une formalisation du problème :
+
+                            -------- Generalities -------
+However, I shall be a bit more demanding when it comes to feature-completeness, stability,
+and usability of the final product.
+ => Prendre en compte l'aspect stabilité et utilisation et complétion du projet.
+
+                            -------Specifications-------
+Representer le monde graphiquement avec une vue par dessus.
+// recommandation du prof de faire un affichage graphique sur terminale.
+Puis faire une 2.5D vue isometrique.
+
+Thus not only should the two run in separate threads, but it should be possible 
+to simply activate and deactivate rendering at will while a simulation is running.
+
+Question au prof : faut il faire une manipulation de thread ? ou juste un boolean 
+pour activer ou non l'affichage graphique.
+
+                            ---- Bobs -------
+La representation en sprite des bobs doit dépendre de leur vitesse / taille / mémoire / etc.
+
+La représentation doit être celle de l'utilisateur ; modifiable autant que possible
+pour permettre de mettre l'accent sur les caractéristiques qui les intéressent. 
+=> dans le menu on devra donner accès à un choix de couleur pour les attributs des bobs.
+
+Les bobs spawnent en Random dans la grille au début. et P=100 = nombre de bobs au départ (modifiable).
+
+A chaque tick il y a une action de bobs.
+
+exemple de coordonnées sur une case de la grille :
+x = 50 and y = 5
+(50,5) : [Bob1,foodTotal,Bob2]
+
+Chaque bob à une énergie Espawn = 100 et qui arrive à un maximum de 200 et 
+qui soustrait de 1 à chaque déplacement.( stationnaire = -0.5).
+
+Si un bob se retrouve dans une cellule avec de l'energie, il mange le maximum de ce qu'il
+trouve. jusqu'a E = 200.
+
+S'il y a encore de la nourriture au prochain tour, il reste stationnaire.
+
+Si un bob à moins de 0 (inclus) énergie : il meurt
+
+Si deux bobs sont sur le même point de nourriture : l'un d'eux reçoit la nourriture.
+
+-------------------- Basic level : food hunting ---------------
+
+Une journée est équivalent à D=100 ticks.
+
+Chaque jour : F = 200 food spawn et chaque point de nourriture donne Ef = 100 energie.
+(Quand nous coderons, lorsqu'on aura plusieurs point de nourriture superposés,
+ je vois deux manières de proceder : 
+ 1- parcourir toute la grille et faire fusionner les points de nourriture en un seul 
+ point (donc supprimer tout les objets food et n'en laisser qu'un seul).
+ 2- laisser beaucoup de points de nourriture au même endroit mais qui seront tous parcouru
+ à chaque fois qu'un bob se déplace sur leur coordonées (plus d'itérations dans l'objet
+  qui stockera les foods points ) => chercher la solution la plus optimale et la 
+  moins couteuse).
+
+La nourriture disparrait chaque jour.
+
+Chaque bob à une énergie Espawn = 100 et qui arrive à un maximum de 200 et 
+qui soustrait de 1 à chaque déplacement.( stationnaire = -0.5).
+
+Si un bob se retrouve dans une cellule avec de l'energie, il mange le maximum de ce qu'il
+trouve. jusqu'a E = 200.
+
+S'il y a encore de la nourriture au prochain tour, il reste stationnaire.
+
+(Il peu y avoir des restes de nourritures (je suppose que s'il reste 50 de food l'objet reste). )
+// A vérifier avec le prof.
+
+Si deux bobs sont sur le même point de nourriture : l'un d'eux reçoit la nourriture.
+
+Si un bob à moins de 0 (inclus) énergie : il meurt
+
+Si un bob à plus d'energie max. il se reproduit et perd 150 d'énergie.
+le bébé Bob a 50 énergie de départ.
+
+                    ---------- Velocity ----------
+
+
+
+
+
+
