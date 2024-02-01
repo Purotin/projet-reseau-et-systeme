@@ -72,8 +72,6 @@ class Game:
         elif type(grid) == str:
             self.loadSaveFile(grid)
         
-        
-
     # main loop
     def run(self):
         """
@@ -169,7 +167,6 @@ class Game:
         print('\n')
         print(f'Tick: {self.tickCount} - Days: {self.grid.dayCount}')
         print(f'Bobs: {len(self.grid.getAllBobs())} - Food: {len(self.grid.getAllEdibleObjects())} ')
-
 
     # handle events
     def events(self):

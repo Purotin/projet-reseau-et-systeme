@@ -1,0 +1,15 @@
+1 : 1 joueur regarde la partie à distance
+	1.1 : 1 personne envoie un msg à une autre personne en LAN
+
+	1.2 : Ajout de la gestion des joueurs dans le jeu
+		Est-ce que le jeu bloque en attendant le prochain joueur ? 	>>> 	Non
+		Comment gérer la priorité des actions des joueurs ? 		>>> 	Exemple : 
+													case = [bob_j1, bob_j2, nourriture_j2]	
+													j1 : bob_j1 mange nourriture_j2 -> j1 demande à j2 manger nourriture_j2 
+													j2 : laisse j1 manger nourriture_j2
+													j1 : bob_j1 mange nourriture_j2
+													j1 : diffuse nourriture_j2_case mangée
+
+	1.3 : Récupération des informations du jeu dans la partie réseau
+	1.4 : 
+2 :

@@ -593,7 +593,7 @@ class Grid:
             if b.action != "move" and not(Settings.enableParthenogenesis and b.energy >= b.energyMax):
                 b.incrementEnergy(-Settings.tickMinEnergyConsumption)
 
-            if b.isDead() and b.action != "eaten":
+            if b.energy <= 0 and b.action != "eaten":
                 b.action = "decay"
 
 

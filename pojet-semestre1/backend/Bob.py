@@ -65,14 +65,6 @@ class Bob:
     def getMemorySize(self):
         return round(self.memorySize)
 
-    # Check if the bob is dead
-    def isDead(self):
-        return self.energy <= 0
-    
-    # Check if the bob is alive
-    def isAlive(self):
-        return self.energy > 0
-
 
     # Bob data modification methods
 
@@ -91,7 +83,6 @@ class Bob:
         if Settings.enableIsotonicDrinks and energyIncrement < 0:
             energyIncrement *= self.consumptionFactor
         self.energy = min(Settings.energyMax, max(0,self.energy + energyIncrement))
-
 
     # Add a food to the memory of the bob, forgetting the oldest one if the memory is full
     def putInFoodMemory(self, element):
@@ -118,7 +109,10 @@ class Bob:
     def updateEffects(self):
         for effect in self.effects:
             effect.applyEffect(self)
-            
+
+     # Create a child from one parent       
+    
+    # Create a child from one parent
     def createMonoparentalChild(self):
         """
         Create a new bob with the same properties as the parent.
@@ -154,6 +148,7 @@ class Bob:
         # Return the new bob
         return bornBob
 
+    # Create a child from two parents
     @staticmethod
     def createBiParentalChild(b1, b2):
         """
