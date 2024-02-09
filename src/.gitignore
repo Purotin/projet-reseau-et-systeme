@@ -1,0 +1,6 @@
+# Ignorer les fichiers .DS_Store
+.DS_Store
+**/.DS_Store
+
+# Ignorer le dossier .vscode
+.vscode/

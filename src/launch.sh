@@ -18,3 +18,6 @@ network_manager_pid=$!
 
 # Lancer le script Python avec les noms des pipes en arguments
 python3 message_handler.py $py_to_c $c_to_py
+
+# Tuer le processus C
+kill -9 $network_manager_pid

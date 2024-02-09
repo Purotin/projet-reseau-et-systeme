@@ -18,7 +18,6 @@ def main():
     c_to_py = open(c_to_py, 'r')
 
     print("Python message handler")
-    print("Entrez un message: ", end="\n")
     while True:
         # Utiliser select pour vérifier si nous pouvons lire du c_to_py ou écrire dans py_to_c
         readables, writables, _ = select.select([c_to_py, sys.stdin], [py_to_c], [])
@@ -31,10 +30,15 @@ def main():
 
         # Si nous pouvons écrire dans py_to_c, demander à l'utilisateur d'entrer un message
         if py_to_c in writables:
-            message = sys.stdin.readline().strip()
+            message = input("Entrez un message: ")
+            # Si l'utilisateur entre "exit", fermer les pipes et terminer le programme
+            if message == "exit":
+                py_to_c.close()
+                c_to_py.close()
+                sys.exit(0)
+            # Écrire le message dans py_to_c
             print(message, file=py_to_c)
             py_to_c.flush()
-            print("Entrez un message: ", end="\n")
 
 
 if __name__ == "__main__":
