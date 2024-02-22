@@ -20,6 +20,8 @@ void *receive_messages(void *socket) {
         }
     }
 
+    memset(message, '\0', MAX_LENGTH);
+
     #ifdef DEBUG
     printf("Fin de la réception des messages du pair\n");
     #endif
@@ -134,6 +136,8 @@ void read_and_send_messages(int client_sockfd) {
             send(client_sockfd, message, strlen(message), 0);
         }
     }
+
+    memset(message, '\0', MAX_LENGTH);
 
     #ifdef DEBUG
     printf("Fin de la lecture des messages de Python vers C\n");
