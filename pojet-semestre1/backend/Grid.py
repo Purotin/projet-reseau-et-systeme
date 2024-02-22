@@ -547,6 +547,10 @@ class Grid:
         reproduces all Bob objects that are able to reproduce using parthenogenesis or sexual reproduction,
         and deletes all dead Bob objects in the grid using the cleanDeadBobs method.
         """
+        # Receive the grid from the server before a turn
+        if Settings.onlineMode:
+            self.gridDict = recvGrid()
+
         # Get a list of all bobs in the grid
         bobsList = self.getAllBobs()
    
@@ -597,6 +601,10 @@ class Grid:
 
             if b.energy <= 0 and b.action != "eaten":
                 b.action = "decay"
+                
+        # Send the grid to the server after a turn
+        if Settings.onlineMode:
+            self.sendGrid()
 
 
     # Day events
@@ -741,3 +749,11 @@ class Grid:
     # Deserialize the grid dictionnary using pickle
     def deserializeDict(self, data):
         return pickle.loads(data)
+    
+    # Send the grid to the server
+    def sendGrid(self):
+        pass
+
+    # Receive the grid from the server
+    def recvGrid(self):
+        pass
