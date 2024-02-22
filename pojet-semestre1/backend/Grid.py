@@ -5,6 +5,7 @@ from backend.Edible import *
 from backend.Effect import SpittedAt
 from random import randint, choice
 from math import sqrt
+import pickle
 
 class Grid:
     def __init__(self, size, bobCount, foodCount, sausageCount = 0):
@@ -58,7 +59,8 @@ class Grid:
 
 
     # Grid data retrieval methods
-    
+
+
     # Retrieve a cell at the position (x,y) in the grid
     def getCellAt(self, x, y):
         return self.gridDict.get((x, y))
@@ -728,3 +730,14 @@ class Grid:
                 bestBob = bob
         return bestBob
     
+
+    # Online mode methods
+
+
+    # Serialize the grid dictionnary using pickle
+    def serializeDict(self):
+        return pickle.dumps(self.gridDict)
+    
+    # Deserialize the grid dictionnary using pickle
+    def deserializeDict(self, data):
+        return pickle.loads(data)
