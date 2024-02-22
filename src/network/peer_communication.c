@@ -51,7 +51,7 @@ int create_server_socket(char *port) {
     int server_sockfd;
 
     // Créer un socket pour agir en tant que serveur
-    if ((server_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    if ((server_sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         perror("Erreur lors de la création du socket serveur");
         exit(EXIT_FAILURE);
     }
@@ -62,11 +62,6 @@ int create_server_socket(char *port) {
 
     if (bind(server_sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
         perror("Erreur lors de la liaison du socket serveur");
-        exit(EXIT_FAILURE);
-    }
-
-    if (listen(server_sockfd, 1) < 0) {
-        perror("Erreur lors de l'écoute sur le socket serveur");
         exit(EXIT_FAILURE);
     }
 
@@ -83,7 +78,7 @@ int create_client_socket(char *ip, char *port) {
     int client_sockfd;
 
     // Créer un socket pour agir en tant que client
-    if ((client_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    if ((client_sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         perror("Erreur lors de la création du socket client");
         exit(EXIT_FAILURE);
     }
@@ -92,12 +87,6 @@ int create_client_socket(char *ip, char *port) {
     client_addr.sin_port = htons(atoi(port));  // Se connecter au port du pair
     client_addr.sin_addr.s_addr = inet_addr(ip);  // Se connecter à l'adresse IP du pair
 
-    // Essayer de se connecter à l'autre pair
-    if (connect(client_sockfd, (struct sockaddr *)&client_addr, sizeof(client_addr)) < 0) {
-        perror("Erreur lors de la connexion au pair");
-        exit(EXIT_FAILURE);
-    }
-
     #ifdef DEBUG
     printf("Connexion établie avec le pair\n");
     #endif
@@ -105,37 +94,33 @@ int create_client_socket(char *ip, char *port) {
     return client_sockfd;
 }
 
-// Accepter la connexion entrante de l'autre pair
-int accept_incoming_connection(int server_sockfd) {
-    int new_sockfd;
-
-    // Accepter la connexion entrante de l'autre pair
-    if ((new_sockfd = accept(server_sockfd, NULL, NULL)) < 0) {
-        perror("Erreur lors de l'acceptation de la connexion entrante");
-        exit(EXIT_FAILURE);
-    }
-
-    #ifdef DEBUG
-    printf("Connexion entrante acceptée\n");
-    #endif
-
-    return new_sockfd;
-}
-
-// Lire les messages entrants de Python et les envoyer au pair
-void read_and_send_messages(int client_sockfd) {
+// Recevoir les messages entrants du pair et les écrire dans le pipe vers Python
+void *receive_messages(void *socket) {
+    int sockfd = *((int *)socket);
     char message[MAX_LENGTH];
 
-    // Boucle infinie pour lire les messages entrants de Python et les envoyer au pair
     while (1) {
-        // Lire une ligne depuis le pipe de Python vers C
-        if (read(py_to_c, message, MAX_LENGTH) > 0) {
-            // Envoyer le message au pair
-            send(client_sockfd, message, strlen(message), 0);
+        ssize_t length = recv(sockfd, message, MAX_LENGTH - 1, 0);
+        if (length > 0) {
+            // Assurez-vous que le message est correctement terminé
+            message[length] = '\0';
+
+            // Écrire le message dans le pipe vers Python
+            write(c_to_py, message, strlen(message));
+            write(c_to_py, "\n", 1);
+            // Faire une pause pour donner au processus Python le temps de lire le message
+            usleep(1000);  // Pause for 1000 microseconds = 1 millisecond
+
+            // Vider le tampon de réception
+            char temp;
+            while (recv(sockfd, &temp, 1, MSG_DONTWAIT) > 0);
+
         }
     }
 
     #ifdef DEBUG
-    printf("Fin de la lecture des messages de Python vers C\n");
+    printf("Fin de la réception des messages du pair\n");
     #endif
+
+    return NULL;
 }
