@@ -8,25 +8,6 @@
 
 int py_to_c, c_to_py;
 
-// Recevoir les messages entrants du pair et les écrire dans le pipe vers Python
-void *receive_messages(void *socket) {
-    int sockfd = *((int *)socket);
-    char message[MAX_LENGTH];
-
-    while (1) {
-        if (recv(sockfd, message, MAX_LENGTH, 0) > 0) {
-            // Écrire le message dans le pipe vers Python
-            write(c_to_py, message, strlen(message));
-        }
-    }
-
-    #ifdef DEBUG
-    printf("Fin de la réception des messages du pair\n");
-    #endif
-
-    return NULL;
-}
-
 // Ouvrir les pipes de communication avec Python
 void open_pipes(char *py_to_c_name, char *c_to_py_name) {
     // Ouvrir les pipes
