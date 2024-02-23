@@ -1,19 +1,15 @@
 1 : 1 joueur regarde la partie à distance
-	0.1 : 1 personne envoie un msg à une autre personne en LAN
-		0.1.0 : Réalisation d'un gestionnaire de messages python et d'un gestionnaire de communication réseau en TCP						FAIT			Paul & Moustapha
-		0.1.1 : Changer TCP en UDP																À FAIRE			Yasser & Moustapha
-		0.1.2 : Ne pas utiliser plusieurs threads														À FAIRE			Yasser & Moustapha
-	
-	0.2 : Récupération des informations du jeu à transmettre aux pairs												À FAIRE			Paul
-	
-	0.3 : Transmission des informations du jeu aux pairs	
-		0.3.0 : Tuyauterie entre le jeu et le gestionnaire de communication réseau										À FAIRE			Yanis
-		0.3.1 : Vérification de l'intégrité du message reçu													À FAIRE			Mikaël
+	1.1 : 1 personne envoie un msg à une autre personne en LAN
 
-	0.3 : Ajout de la gestion des joueurs dans le jeu
-		0.3.0 : Gestion de la propriété des objets du jeu	(classe joueur avec liste des objets du joueur)							À FAIRE			Martin
+	1.2 : Ajout de la gestion des joueurs dans le jeu
+		Est-ce que le jeu bloque en attendant le prochain joueur ? 	>>> 	Non
+		Comment gérer la priorité des actions des joueurs ? 		>>> 	Exemple : 
+													case = [bob_j1, bob_j2, nourriture_j2]	
+													j1 : bob_j1 mange nourriture_j2 -> j1 demande à j2 manger nourriture_j2 
+													j2 : laisse j1 manger nourriture_j2
+													j1 : bob_j1 mange nourriture_j2
+													j1 : diffuse nourriture_j2_case mangée
 
-		
-2 : 2 Joueurs jouent ensemble
-
-3 : plus de deux joueurs jouent ensemble
+	1.3 : Récupération des informations du jeu dans la partie réseau
+	1.4 : 
+2 :
