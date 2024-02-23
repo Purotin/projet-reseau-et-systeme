@@ -1,6 +1,6 @@
 # Variables
 CC = gcc
-CFLAGS = -Wall -Wextra -pthread
+CFLAGS = -Wall -Wextra
 TARGET = tmp/network_manager
 OBJS = tmp/network_manager.o tmp/peer_communication.o
 
