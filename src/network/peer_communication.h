@@ -2,6 +2,7 @@
 #define PEER_COMMUNICATION_H
 
 #include <pthread.h>
+#include <netinet/in.h>
 
 #define MAX_LENGTH 1024
 
@@ -10,8 +11,7 @@
  * @param socket Le socket à partir duquel lire les messages.
  * @return NULL
  */
-void *receive_messages(void *socket);
-
+void *receive_messages(void *socket, struct sockaddr_in *client_addr, socklen_t addr_len);
 /**
  * Ouvre les pipes pour la communication entre Python et C.
  * @param py_to_c_name Le nom du pipe de Python vers C.
@@ -39,12 +39,7 @@ int create_client_socket(char *ip, char *port);
  * @param server_sockfd Le descripteur de fichier du socket serveur.
  * @return Le descripteur de fichier du nouveau socket pour la connexion acceptée.
  */
-int accept_incoming_connection(int server_sockfd);
 
-/**
- * Lit les messages du pipe de Python vers C et les envoie sur un socket client.
- * @param client_sockfd Le descripteur de fichier du socket client.
- */
-void read_and_send_messages(int client_sockfd);
+void read_and_send_messages(int client_sockfd, struct sockaddr_in *client_addr, socklen_t addr_len);
 
-#endif // PEER_COMMUNICATION_H
+#endif

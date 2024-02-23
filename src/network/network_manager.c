@@ -1,10 +1,10 @@
 #include "peer_communication.h"
-#include <pthread.h>
 #include <stdio.h>
 
 int main(int argc, char *argv[]) {
-    pthread_t thread_id;
-    int server_sockfd, client_sockfd, new_sockfd;
+    int server_sockfd, client_sockfd;
+    struct sockaddr_in client_addr;
+    socklen_t addr_len = sizeof(client_addr);
 
     // Vérifier si le nombre d'arguments est correct
     if (argc != 5) {
@@ -26,14 +26,11 @@ int main(int argc, char *argv[]) {
     // Créer un socket pour agir en tant que client
     client_sockfd = create_client_socket(ip, port);
 
-    // Accepter une connexion entrante sur le socket serveur
-    new_sockfd = accept_incoming_connection(server_sockfd);
-
-    // Créer un nouveau thread pour recevoir des messages du pair
-    pthread_create(&thread_id, NULL, receive_messages, &new_sockfd);
+    // Recevoir des messages du pair
+    receive_messages(&server_sockfd, &client_addr, addr_len);
 
     // Lire les messages du pipe de Python vers C et les envoyer au pair
-    read_and_send_messages(client_sockfd);
+    read_and_send_messages(client_sockfd, &client_addr, addr_len);
 
     return 0;
 }

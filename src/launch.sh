@@ -16,6 +16,8 @@ c_to_py="tmp/c_to_py_$id"
 # Enregistrer l'ID du processus
 network_manager_pid=$!
 
+echo 'PID='$network_manager_pid
+
 # Lancer le script Python avec les noms des pipes en arguments
 python3 message_handler.py $py_to_c $c_to_py
 
