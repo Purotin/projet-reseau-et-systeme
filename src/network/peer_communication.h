@@ -14,14 +14,16 @@
  * @param socket Le socket à partir duquel lire les messages.
  * @return NULL
  */
-void *receive_messages(void *socket);
+// void *receive_messages(void *socket);
 
 /**
- * Ouvre les pipes pour la communication entre Python et C.
+ * Ouvre les pipes de communication avec Python.
  * @param py_to_c_name Le nom du pipe de Python vers C.
  * @param c_to_py_name Le nom du pipe de C vers Python.
+ * @param py_to_c_fd Le descripteur de fichier du pipe de Python vers C.
+ * @param c_to_py_fd Le descripteur de fichier du pipe de C vers Python.
  */
-void open_pipes(char *py_to_c_name, char *c_to_py_name);
+void open_pipes(char *py_to_c_name, char *c_to_py_name, int *py_to_c_fd, int *c_to_py_fd);
 
 /**
  * Crée un socket pour agir en tant que serveur.
@@ -42,6 +44,12 @@ int create_client_socket(char *ip, char *port, struct sockaddr_in *peer_addr, so
  * Lit les messages du pipe de Python vers C et les envoie sur un socket client.
  * @param client_sockfd Le descripteur de fichier du socket client.
  */
-void read_and_send_messages(int client_sockfd, struct sockaddr_in *peer_addr, socklen_t peer_addr_len);
+// void read_and_send_messages(int client_sockfd, struct sockaddr_in *peer_addr, socklen_t peer_addr_len);
+
+/**
+ * Lit les messages d'un socket serveur et les écrit dans le pipe de C vers Python.
+ * @param server_sockfd Le descripteur de fichier du socket serveur.
+ */
+void handle_communication(int py_to_c, int c_to_py, int client_sockfd, struct sockaddr_in *peer_addr, socklen_t peer_addr_len, int sockfd);
 
 #endif // PEER_COMMUNICATION_H

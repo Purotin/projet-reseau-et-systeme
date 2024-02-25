@@ -22,7 +22,8 @@ int main(int argc, char *argv[]) {
     char *c_to_py_name = argv[4];
 
     // Ouvrir les pipes pour la communication entre Python et C
-    open_pipes(py_to_c_name, c_to_py_name);
+    int py_to_c, c_to_py;
+    open_pipes(py_to_c_name, c_to_py_name, &py_to_c, &c_to_py);
 
     // Créer un socket pour agir en tant que serveur
     server_sockfd = create_server_socket(port);
@@ -30,13 +31,8 @@ int main(int argc, char *argv[]) {
     // Créer un socket pour agir en tant que client
     client_sockfd = create_client_socket(ip, port, &peer_addr, &peer_addr_len);
 
-    while (1)
-    {
-        // Lire les messages du pipe de Python vers C et les envoyer au pair
-        read_and_send_messages(client_sockfd, &peer_addr, peer_addr_len);
+    // Gérer la communication entre les deux sockets
+    handle_communication(py_to_c, c_to_py, client_sockfd, &peer_addr, peer_addr_len, server_sockfd);
 
-        // Recevoir des messages du pair
-        receive_messages(&server_sockfd);
-    }
     return 0;
 }
