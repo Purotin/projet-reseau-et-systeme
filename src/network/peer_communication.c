@@ -3,8 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <arpa/inet.h>
-#include <fcntl.h>
+
 
 int py_to_c, c_to_py;
 
@@ -12,19 +11,17 @@ int py_to_c, c_to_py;
 void *receive_messages(void *socket) {
     int sockfd = *((int *)socket);
     char message[MAX_LENGTH];
+    struct sockaddr_in peer_addr;
+    socklen_t peer_addr_len = sizeof(peer_addr);
 
     while (1) {
-        if (recv(sockfd, message, MAX_LENGTH, 0) > 0) {
+        if (recvfrom(sockfd, message, MAX_LENGTH, 0, (struct sockaddr *)&peer_addr, &peer_addr_len) > 0) {
             // Écrire le message dans le pipe vers Python
             write(c_to_py, message, strlen(message));
         }
     }
 
     memset(message, '\0', MAX_LENGTH);
-
-    #ifdef DEBUG
-    printf("Fin de la réception des messages du pair\n");
-    #endif
 
     return NULL;
 }
@@ -42,9 +39,6 @@ void open_pipes(char *py_to_c_name, char *c_to_py_name) {
         exit(EXIT_FAILURE);
     }
 
-    #ifdef DEBUG
-    printf("Pipes ouverts pour la communication entre Python et C\n");
-    #endif
 }
 
 // Créer un socket pour agir en tant que serveur
@@ -53,7 +47,7 @@ int create_server_socket(char *port) {
     int server_sockfd;
 
     // Créer un socket pour agir en tant que serveur
-    if ((server_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    if ((server_sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         perror("Erreur lors de la création du socket serveur");
         exit(EXIT_FAILURE);
     }
@@ -67,79 +61,42 @@ int create_server_socket(char *port) {
         exit(EXIT_FAILURE);
     }
 
-    if (listen(server_sockfd, 1) < 0) {
-        perror("Erreur lors de l'écoute sur le socket serveur");
-        exit(EXIT_FAILURE);
-    }
-
-    #ifdef DEBUG
-    printf("Socket serveur créé et en attente de connexion\n");
-    #endif
 
     return server_sockfd;
 }
 
 // Créer un socket pour agir en tant que client
-int create_client_socket(char *ip, char *port) {
-    struct sockaddr_in client_addr;
+int create_client_socket(char *ip, char *port, struct sockaddr_in *peer_addr, socklen_t *peer_addr_len) {
     int client_sockfd;
 
     // Créer un socket pour agir en tant que client
-    if ((client_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    if ((client_sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         perror("Erreur lors de la création du socket client");
         exit(EXIT_FAILURE);
     }
 
-    client_addr.sin_family = AF_INET;
-    client_addr.sin_port = htons(atoi(port));  // Se connecter au port du pair
-    client_addr.sin_addr.s_addr = inet_addr(ip);  // Se connecter à l'adresse IP du pair
+    peer_addr->sin_family = AF_INET;
+    peer_addr->sin_port = htons(atoi(port));  // Se connecter au port du pair
+    peer_addr->sin_addr.s_addr = inet_addr(ip);  // Se connecter à l'adresse IP du pair   
 
-    // Essayer de se connecter à l'autre pair
-    if (connect(client_sockfd, (struct sockaddr *)&client_addr, sizeof(client_addr)) < 0) {
-        perror("Erreur lors de la connexion au pair");
-        exit(EXIT_FAILURE);
-    }
-
-    #ifdef DEBUG
-    printf("Connexion établie avec le pair\n");
-    #endif
+    *peer_addr_len = sizeof(*peer_addr);
 
     return client_sockfd;
 }
 
-// Accepter la connexion entrante de l'autre pair
-int accept_incoming_connection(int server_sockfd) {
-    int new_sockfd;
-
-    // Accepter la connexion entrante de l'autre pair
-    if ((new_sockfd = accept(server_sockfd, NULL, NULL)) < 0) {
-        perror("Erreur lors de l'acceptation de la connexion entrante");
-        exit(EXIT_FAILURE);
-    }
-
-    #ifdef DEBUG
-    printf("Connexion entrante acceptée\n");
-    #endif
-
-    return new_sockfd;
-}
 
 // Lire les messages entrants de Python et les envoyer au pair
-void read_and_send_messages(int client_sockfd) {
+void read_and_send_messages(int client_sockfd, struct sockaddr_in *peer_addr, socklen_t peer_addr_len) {
     char message[MAX_LENGTH];
 
-    // Boucle infinie pour lire les messages entrants de Python et les envoyer au pair
+    // Infinite loop to read incoming messages from Python and send them to the peer
     while (1) {
-        // Lire une ligne depuis le pipe de Python vers C
+        // Read a line from the Python to C pipe
         if (read(py_to_c, message, MAX_LENGTH) > 0) {
-            // Envoyer le message au pair
-            send(client_sockfd, message, strlen(message), 0);
+            // Send the message to the peer
+            sendto(client_sockfd, message, strlen(message), 0, (struct sockaddr *)peer_addr, peer_addr_len);
         }
     }
 
     memset(message, '\0', MAX_LENGTH);
-
-    #ifdef DEBUG
-    printf("Fin de la lecture des messages de Python vers C\n");
-    #endif
 }

@@ -2,6 +2,10 @@
 #define PEER_COMMUNICATION_H
 
 #include <pthread.h>
+#include <stdio.h>
+#include <arpa/inet.h>
+#include <fcntl.h>
+#include <sys/socket.h>
 
 #define MAX_LENGTH 1024
 
@@ -32,19 +36,12 @@ int create_server_socket(char *port);
  * @param port Le port du pair à connecter.
  * @return Le descripteur de fichier du socket client.
  */
-int create_client_socket(char *ip, char *port);
-
-/**
- * Accepte une connexion entrante sur un socket serveur.
- * @param server_sockfd Le descripteur de fichier du socket serveur.
- * @return Le descripteur de fichier du nouveau socket pour la connexion acceptée.
- */
-int accept_incoming_connection(int server_sockfd);
+int create_client_socket(char *ip, char *port, struct sockaddr_in *peer_addr, socklen_t *peer_addr_len);
 
 /**
  * Lit les messages du pipe de Python vers C et les envoie sur un socket client.
  * @param client_sockfd Le descripteur de fichier du socket client.
  */
-void read_and_send_messages(int client_sockfd);
+void read_and_send_messages(int client_sockfd, struct sockaddr_in *peer_addr, socklen_t peer_addr_len);
 
 #endif // PEER_COMMUNICATION_H
