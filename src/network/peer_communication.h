@@ -1,20 +1,11 @@
 #ifndef PEER_COMMUNICATION_H
 #define PEER_COMMUNICATION_H
 
-#include <pthread.h>
-#include <stdio.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <sys/socket.h>
 
 #define MAX_LENGTH 1024
-
-/**
- * Fonction pour recevoir des messages d'un socket et les écrire dans un pipe.
- * @param socket Le socket à partir duquel lire les messages.
- * @return NULL
- */
-// void *receive_messages(void *socket);
 
 /**
  * Ouvre les pipes de communication avec Python.
@@ -39,12 +30,6 @@ int create_server_socket(char *port);
  * @return Le descripteur de fichier du socket client.
  */
 int create_client_socket(char *ip, char *port, struct sockaddr_in *peer_addr, socklen_t *peer_addr_len);
-
-/**
- * Lit les messages du pipe de Python vers C et les envoie sur un socket client.
- * @param client_sockfd Le descripteur de fichier du socket client.
- */
-// void read_and_send_messages(int client_sockfd, struct sockaddr_in *peer_addr, socklen_t peer_addr_len);
 
 /**
  * Lit les messages d'un socket serveur et les écrit dans le pipe de C vers Python.

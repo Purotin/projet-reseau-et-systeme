@@ -8,27 +8,7 @@
 
 #define MAX_LENGTH 1024
 
-
 int py_to_c, c_to_py;
-
-// // Recevoir les messages entrants du pair et les écrire dans le pipe vers Python
-// void *receive_messages(void *socket) {
-//     int sockfd = *((int *)socket);
-//     char message[MAX_LENGTH];
-//     struct sockaddr_in peer_addr;
-//     socklen_t peer_addr_len = sizeof(peer_addr);
-
-   
-//     if (recvfrom(sockfd, message, MAX_LENGTH, 0, (struct sockaddr *)&peer_addr, &peer_addr_len) > 0) {
-//         // Écrire le message dans le pipe vers Python
-//         write(c_to_py, message, strlen(message));
-//     }
-    
-
-//     memset(message, '\0', MAX_LENGTH);
-
-//     return NULL;
-// }
 
 // Ouvrir les pipes de communication avec Python
 void open_pipes(char *py_to_c_name, char *c_to_py_name, int *py_to_c_fd, int *c_to_py_fd) {
@@ -87,22 +67,6 @@ int create_client_socket(char *ip, char *port, struct sockaddr_in *peer_addr, so
     return client_sockfd;
 }
 
-
-// // Lire les messages entrants de Python et les envoyer au pair
-// void read_and_send_messages(int client_sockfd, struct sockaddr_in *peer_addr, socklen_t peer_addr_len) {
-//     char message[MAX_LENGTH];
-
-    
-//     // Read a line from the Python to C pipe
-//     if (read(py_to_c, message, MAX_LENGTH) > 0) {
-//         // Send the message to the peer
-//         sendto(client_sockfd, message, strlen(message), 0, (struct sockaddr *)peer_addr, peer_addr_len);
-//     }
-    
-
-//     memset(message, '\0', MAX_LENGTH);
-// }
-
 // Lire les messages du pair et les écrire dans le pipe vers Python
 void handle_communication(int py_to_c, int c_to_py, int client_sockfd, struct sockaddr_in *peer_addr, socklen_t peer_addr_len, int sockfd) { 
     fd_set readfds;
@@ -123,17 +87,17 @@ void handle_communication(int py_to_c, int c_to_py, int client_sockfd, struct so
         }
 
         if (FD_ISSET(py_to_c, &readfds)) {
-            // Read a line from the Python to C pipe
-            if (read(py_to_c, message, MAX_LENGTH) > 0) {
-                // Send the message to the peer
-                sendto(client_sockfd, message, strlen(message), 0, (struct sockaddr *)peer_addr, peer_addr_len);
+                // Lire une ligne depuis le pipe Python vers C
+                if (read(py_to_c, message, MAX_LENGTH) > 0) {
+                    // Envoyer le message au pair
+                    sendto(client_sockfd, message, strlen(message), 0, (struct sockaddr *)peer_addr, peer_addr_len);
+                }
             }
-        }
 
         if (FD_ISSET(sockfd, &readfds)) {
-            // Receive a message from the peer
+            // Recevoir un message du pair
             if (recvfrom(sockfd, message, MAX_LENGTH, 0, (struct sockaddr *)&peer_addr_recv, &peer_addr_len_recv) > 0) {
-                // Write the message to the Python to C pipe
+                // Écrire le message dans le pipe C vers Python
                 write(c_to_py, message, strlen(message));
             }
         }

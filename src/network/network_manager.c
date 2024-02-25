@@ -1,5 +1,4 @@
 #include "peer_communication.h"
-#include <pthread.h>
 #include <stdio.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>

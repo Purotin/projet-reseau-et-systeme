@@ -3,4 +3,4 @@
 **/.DS_Store
 
 # Ignorer le dossier .vscode
-.vscode/
+.vscode/*
