@@ -6,7 +6,6 @@
 #include <netinet/in.h>
 
 int main(int argc, char *argv[]) {
-    pthread_t thread_id;
     int server_sockfd, client_sockfd;
     struct sockaddr_in peer_addr;
     socklen_t peer_addr_len = sizeof(peer_addr);
@@ -31,11 +30,13 @@ int main(int argc, char *argv[]) {
     // Créer un socket pour agir en tant que client
     client_sockfd = create_client_socket(ip, port, &peer_addr, &peer_addr_len);
 
-    // Créer un nouveau thread pour recevoir des messages du pair
-    pthread_create(&thread_id, NULL, receive_messages, &server_sockfd);
+    while (1)
+    {
+        // Lire les messages du pipe de Python vers C et les envoyer au pair
+        read_and_send_messages(client_sockfd, &peer_addr, peer_addr_len);
 
-    // Lire les messages du pipe de Python vers C et les envoyer au pair
-    read_and_send_messages(client_sockfd, &peer_addr, peer_addr_len);
-
+        // Recevoir des messages du pair
+        receive_messages(&server_sockfd);
+    }
     return 0;
 }
