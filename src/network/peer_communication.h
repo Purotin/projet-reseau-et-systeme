@@ -1,23 +1,20 @@
 #ifndef PEER_COMMUNICATION_H
 #define PEER_COMMUNICATION_H
 
-#include <pthread.h>
+#include <arpa/inet.h>
+#include <fcntl.h>
+#include <sys/socket.h>
 
 #define MAX_LENGTH 1024
 
 /**
- * Fonction pour recevoir des messages d'un socket et les écrire dans un pipe.
- * @param socket Le socket à partir duquel lire les messages.
- * @return NULL
- */
-void *receive_messages(void *socket);
-
-/**
- * Ouvre les pipes pour la communication entre Python et C.
+ * Ouvre les pipes de communication avec Python.
  * @param py_to_c_name Le nom du pipe de Python vers C.
  * @param c_to_py_name Le nom du pipe de C vers Python.
+ * @param py_to_c_fd Le descripteur de fichier du pipe de Python vers C.
+ * @param c_to_py_fd Le descripteur de fichier du pipe de C vers Python.
  */
-void open_pipes(char *py_to_c_name, char *c_to_py_name);
+void open_pipes(char *py_to_c_name, char *c_to_py_name, int *py_to_c_fd, int *c_to_py_fd);
 
 /**
  * Crée un socket pour agir en tant que serveur.
@@ -32,19 +29,12 @@ int create_server_socket(char *port);
  * @param port Le port du pair à connecter.
  * @return Le descripteur de fichier du socket client.
  */
-int create_client_socket(char *ip, char *port);
+int create_client_socket(char *ip, char *port, struct sockaddr_in *peer_addr, socklen_t *peer_addr_len);
 
 /**
- * Accepte une connexion entrante sur un socket serveur.
+ * Lit les messages d'un socket serveur et les écrit dans le pipe de C vers Python.
  * @param server_sockfd Le descripteur de fichier du socket serveur.
- * @return Le descripteur de fichier du nouveau socket pour la connexion acceptée.
  */
-int accept_incoming_connection(int server_sockfd);
-
-/**
- * Lit les messages du pipe de Python vers C et les envoie sur un socket client.
- * @param client_sockfd Le descripteur de fichier du socket client.
- */
-void read_and_send_messages(int client_sockfd);
+void handle_communication(int py_to_c, int c_to_py, int client_sockfd, struct sockaddr_in *peer_addr, socklen_t peer_addr_len, int sockfd);
 
 #endif // PEER_COMMUNICATION_H

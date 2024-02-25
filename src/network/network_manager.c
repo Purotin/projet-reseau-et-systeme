@@ -1,10 +1,13 @@
 #include "peer_communication.h"
-#include <pthread.h>
 #include <stdio.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
 
 int main(int argc, char *argv[]) {
-    pthread_t thread_id;
-    int server_sockfd, client_sockfd, new_sockfd;
+    int server_sockfd, client_sockfd;
+    struct sockaddr_in peer_addr;
+    socklen_t peer_addr_len = sizeof(peer_addr);
 
     // Vérifier si le nombre d'arguments est correct
     if (argc != 5) {
@@ -18,22 +21,17 @@ int main(int argc, char *argv[]) {
     char *c_to_py_name = argv[4];
 
     // Ouvrir les pipes pour la communication entre Python et C
-    open_pipes(py_to_c_name, c_to_py_name);
+    int py_to_c, c_to_py;
+    open_pipes(py_to_c_name, c_to_py_name, &py_to_c, &c_to_py);
 
     // Créer un socket pour agir en tant que serveur
     server_sockfd = create_server_socket(port);
 
     // Créer un socket pour agir en tant que client
-    client_sockfd = create_client_socket(ip, port);
+    client_sockfd = create_client_socket(ip, port, &peer_addr, &peer_addr_len);
 
-    // Accepter une connexion entrante sur le socket serveur
-    new_sockfd = accept_incoming_connection(server_sockfd);
-
-    // Créer un nouveau thread pour recevoir des messages du pair
-    pthread_create(&thread_id, NULL, receive_messages, &new_sockfd);
-
-    // Lire les messages du pipe de Python vers C et les envoyer au pair
-    read_and_send_messages(client_sockfd);
+    // Gérer la communication entre les deux sockets
+    handle_communication(py_to_c, c_to_py, client_sockfd, &peer_addr, peer_addr_len, server_sockfd);
 
     return 0;
 }
