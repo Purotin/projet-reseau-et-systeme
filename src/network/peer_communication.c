@@ -3,46 +3,25 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <arpa/inet.h>
-#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/time.h>
+
+#define MAX_LENGTH 1024
 
 int py_to_c, c_to_py;
 
-// Recevoir les messages entrants du pair et les écrire dans le pipe vers Python
-void *receive_messages(void *socket) {
-    int sockfd = *((int *)socket);
-    char message[MAX_LENGTH];
-
-    while (1) {
-        if (recv(sockfd, message, MAX_LENGTH, 0) > 0) {
-            // Écrire le message dans le pipe vers Python
-            write(c_to_py, message, strlen(message));
-        }
-    }
-
-    #ifdef DEBUG
-    printf("Fin de la réception des messages du pair\n");
-    #endif
-
-    return NULL;
-}
-
 // Ouvrir les pipes de communication avec Python
-void open_pipes(char *py_to_c_name, char *c_to_py_name) {
+void open_pipes(char *py_to_c_name, char *c_to_py_name, int *py_to_c_fd, int *c_to_py_fd) {
     // Ouvrir les pipes
-    if ((py_to_c = open(py_to_c_name, O_RDONLY)) < 0) {
+    if ((*py_to_c_fd = open(py_to_c_name, O_RDONLY)) < 0) {
         perror("Erreur lors de l'ouverture du pipe de Python vers C");
         exit(EXIT_FAILURE);
     }
 
-    if ((c_to_py = open(c_to_py_name, O_WRONLY)) < 0) {
+    if ((*c_to_py_fd = open(c_to_py_name, O_WRONLY)) < 0) {
         perror("Erreur lors de l'ouverture du pipe de C vers Python");
         exit(EXIT_FAILURE);
     }
-
-    #ifdef DEBUG
-    printf("Pipes ouverts pour la communication entre Python et C\n");
-    #endif
 }
 
 // Créer un socket pour agir en tant que serveur
@@ -51,7 +30,7 @@ int create_server_socket(char *port) {
     int server_sockfd;
 
     // Créer un socket pour agir en tant que serveur
-    if ((server_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    if ((server_sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         perror("Erreur lors de la création du socket serveur");
         exit(EXIT_FAILURE);
     }
@@ -65,77 +44,64 @@ int create_server_socket(char *port) {
         exit(EXIT_FAILURE);
     }
 
-    if (listen(server_sockfd, 1) < 0) {
-        perror("Erreur lors de l'écoute sur le socket serveur");
-        exit(EXIT_FAILURE);
-    }
-
-    #ifdef DEBUG
-    printf("Socket serveur créé et en attente de connexion\n");
-    #endif
 
     return server_sockfd;
 }
 
 // Créer un socket pour agir en tant que client
-int create_client_socket(char *ip, char *port) {
-    struct sockaddr_in client_addr;
+int create_client_socket(char *ip, char *port, struct sockaddr_in *peer_addr, socklen_t *peer_addr_len) {
     int client_sockfd;
 
     // Créer un socket pour agir en tant que client
-    if ((client_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    if ((client_sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         perror("Erreur lors de la création du socket client");
         exit(EXIT_FAILURE);
     }
 
-    client_addr.sin_family = AF_INET;
-    client_addr.sin_port = htons(atoi(port));  // Se connecter au port du pair
-    client_addr.sin_addr.s_addr = inet_addr(ip);  // Se connecter à l'adresse IP du pair
+    peer_addr->sin_family = AF_INET;
+    peer_addr->sin_port = htons(atoi(port));  // Se connecter au port du pair
+    peer_addr->sin_addr.s_addr = inet_addr(ip);  // Se connecter à l'adresse IP du pair   
 
-    // Essayer de se connecter à l'autre pair
-    if (connect(client_sockfd, (struct sockaddr *)&client_addr, sizeof(client_addr)) < 0) {
-        perror("Erreur lors de la connexion au pair");
-        exit(EXIT_FAILURE);
-    }
-
-    #ifdef DEBUG
-    printf("Connexion établie avec le pair\n");
-    #endif
+    *peer_addr_len = sizeof(*peer_addr);
 
     return client_sockfd;
 }
 
-// Accepter la connexion entrante de l'autre pair
-int accept_incoming_connection(int server_sockfd) {
-    int new_sockfd;
-
-    // Accepter la connexion entrante de l'autre pair
-    if ((new_sockfd = accept(server_sockfd, NULL, NULL)) < 0) {
-        perror("Erreur lors de l'acceptation de la connexion entrante");
-        exit(EXIT_FAILURE);
-    }
-
-    #ifdef DEBUG
-    printf("Connexion entrante acceptée\n");
-    #endif
-
-    return new_sockfd;
-}
-
-// Lire les messages entrants de Python et les envoyer au pair
-void read_and_send_messages(int client_sockfd) {
+// Lire les messages du pair et les écrire dans le pipe vers Python
+void handle_communication(int py_to_c, int c_to_py, int client_sockfd, struct sockaddr_in *peer_addr, socklen_t peer_addr_len, int sockfd) { 
+    fd_set readfds;
     char message[MAX_LENGTH];
+    struct sockaddr_in peer_addr_recv;
+    socklen_t peer_addr_len_recv = sizeof(peer_addr_recv);
 
-    // Boucle infinie pour lire les messages entrants de Python et les envoyer au pair
     while (1) {
-        // Lire une ligne depuis le pipe de Python vers C
-        if (read(py_to_c, message, MAX_LENGTH) > 0) {
-            // Envoyer le message au pair
-            send(client_sockfd, message, strlen(message), 0);
-        }
-    }
+        FD_ZERO(&readfds);
+        FD_SET(py_to_c, &readfds);
+        FD_SET(sockfd, &readfds);
 
-    #ifdef DEBUG
-    printf("Fin de la lecture des messages de Python vers C\n");
-    #endif
+        int max_fd = (py_to_c > sockfd) ? py_to_c : sockfd;
+
+        if (select(max_fd + 1, &readfds, NULL, NULL, NULL) < 0) {
+            perror("Erreur lors de l'appel à select");
+            exit(EXIT_FAILURE);
+        }
+
+        if (FD_ISSET(py_to_c, &readfds)) {
+                // Lire une ligne depuis le pipe Python vers C
+                if (read(py_to_c, message, MAX_LENGTH) > 0) {
+                    // Envoyer le message au pair
+                    sendto(client_sockfd, message, strlen(message), 0, (struct sockaddr *)peer_addr, peer_addr_len);
+                }
+            }
+
+        if (FD_ISSET(sockfd, &readfds)) {
+            // Recevoir un message du pair
+            if (recvfrom(sockfd, message, MAX_LENGTH, 0, (struct sockaddr *)&peer_addr_recv, &peer_addr_len_recv) > 0) {
+                // Écrire le message dans le pipe C vers Python
+                write(c_to_py, message, strlen(message));
+            }
+        }
+
+        memset(message, '\0', MAX_LENGTH);
+    }
 }
