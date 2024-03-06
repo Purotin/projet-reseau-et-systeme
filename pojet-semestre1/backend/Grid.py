@@ -12,6 +12,9 @@ class Grid:
         self.gridDict = {} # {(x,y):Cell}
         self.bobCount = bobCount
         self.foodCount = foodCount
+        self.currentID_entities = 1
+        self.currentID_Player = 1
+
         if Settings.enableSpitting:
             self.sausageCount = sausageCount
         self.dayCount = 0
@@ -129,7 +132,7 @@ class Grid:
 
 
     # Place a bob at the position (x,y) in the grid
-    def addBob(self, b = Bob()):
+    def addBob(self, x = 0, y = 0):
         """
         This method places a Bob object at it's currrent position in the grid. 
         If the cell at that position does not yet exist, it is created. 
@@ -138,6 +141,8 @@ class Grid:
         Parameters:
         bob (Bob): The Bob object to be placed. Defaults to a new Bob object.
         """
+        b = Bob(self.currentID_entities, x, y)
+        self.currentID_entities += 1
 
         # If the current cell does not exist, create a new cell at coordinates (x, y)
         if not self.getCellAt(b.currentX, b.currentY):
@@ -639,7 +644,7 @@ class Grid:
         for _ in range(self.bobCount):
             x = randint(0, self.size - 1)
             y = randint(0, self.size - 1)
-            self.addBob(Bob(x, y))
+            self.addBob(self.currentID_entities, x, y)
 
     # Populates the grid with food at the start of a new day
     def spawnFood(self):
@@ -656,7 +661,9 @@ class Grid:
             elif Settings.enableIsotonicDrinks and randint(1, 100) <= 2:
                 self.addEdible(EffectFood(x, y, energy=10, effect=PowerCharged()))
             else:
-                self.addEdible(Food(x,y))
+                self.addEdible(Food(self.currentID_entities, x,y))
+            
+            self.currentID_entities += 1
         
     # Populates the grid with sausages at the start of a new day
     def spawnSausages(self):
@@ -675,7 +682,8 @@ class Grid:
                 if self.gridDict[x,y].edibleObject is None or isinstance(self.gridDict[x,y].edibleObject, Sausage):
                     break
 
-            self.addEdible(Sausage(x, y))
+            self.addEdible(Sausage(self.currentID_entities, x, y))
+            self.currentID_entities += 1
 
     # Delete all dead bobs
     def cleanDeadBobs(self):

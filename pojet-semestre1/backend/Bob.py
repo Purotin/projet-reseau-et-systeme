@@ -6,7 +6,7 @@ from backend.Settings import Settings
 
 class Bob:
 
-    def __init__(self, x = 0, y = 0, totalVelocity = None, mass = None, energy = None, perception = None, memorySize = None, maxAmmos = None):
+    def __init__(self, id, x = 0, y = 0, totalVelocity = None, mass = None, energy = None, perception = None, memorySize = None, maxAmmos = None):
         
         # Physical properties
         self.totalVelocity = totalVelocity if not totalVelocity is None else Settings.spawnVelocity
@@ -40,6 +40,9 @@ class Bob:
         self.generation = 0
 
         self.age = 0
+
+        self.ID = id
+        self.property = id
     
     def __str__(self):
         return "B"

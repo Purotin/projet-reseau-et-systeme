@@ -2,14 +2,17 @@ from backend.Settings import Settings
 from backend.Effect import *
 
 class Edible:
-    def __init__(self, x, y, value=0):
+    def __init__(self, id, x, y, value=0):
         self.x = x
         self.y = y
         self.value = value
+        self.ID = id
+        self.property = id
+
 
 class Food(Edible):
-    def __init__(self, x, y, energy=Settings.spawnedFoodEnergy):
-        super().__init__(x, y, energy)
+    def __init__(self, id, x, y, energy=Settings.spawnedFoodEnergy):
+        super().__init__(id, x, y, energy)
 
 class EffectFood(Food):
     def __init__(self, x, y, energy=Settings.spawnedFoodEnergy, effect=None):
@@ -20,5 +23,5 @@ class PoisonnedFood(Food):
     pass
 
 class Sausage(Edible):
-    def __init__(self, x, y, ammos=Settings.spawnSausagesAmmos):
-        super().__init__(x, y, ammos)
+    def __init__(self, id, x, y, ammos=Settings.spawnSausagesAmmos):
+        super().__init__(id, x, y, ammos)
