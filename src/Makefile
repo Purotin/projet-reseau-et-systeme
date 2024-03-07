@@ -1,6 +1,7 @@
 # Variables
 CC = gcc
 CFLAGS = -Wall -Wextra -pedantic
+LDFLAGS = -lssl -lcrypto
 TARGET = tmp/network_manager
 OBJS = tmp/network_manager.o tmp/peer_communication.o
 
@@ -9,7 +10,7 @@ all: $(TARGET)
 
 # Règle pour l'édition de liens
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS)
 
 # Règle pour la compilation
 tmp/network_manager.o: network/network_manager.c network/peer_communication.h

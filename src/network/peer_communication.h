@@ -1,9 +1,8 @@
 #ifndef PEER_COMMUNICATION_H
 #define PEER_COMMUNICATION_H
 
-#include <arpa/inet.h>
+#include <Winsock2.h>
 #include <fcntl.h>
-#include <sys/socket.h>
 
 #define MAX_LENGTH 1024
 
@@ -36,5 +35,5 @@ int create_client_socket(char *ip, char *port, struct sockaddr_in *peer_addr, so
  * @param server_sockfd Le descripteur de fichier du socket serveur.
  */
 void handle_communication(int py_to_c, int c_to_py, int client_sockfd, struct sockaddr_in *peer_addr, socklen_t peer_addr_len, int sockfd);
-
+void compute_sha256(char *message, char outputBuffer[65]);
 #endif // PEER_COMMUNICATION_H

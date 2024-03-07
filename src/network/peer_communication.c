@@ -5,26 +5,12 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#include <openssl/sha.h>
+#include <openssl/opensslv.h>
 
 #define MAX_LENGTH 1024
 
 int py_to_c, c_to_py;
-
-// Calculate CRC checksum
-unsigned int calculate_checksum(const char *message) {
-    // CRC algorithm implementation
-    // ...
-    // Return the calculated checksum
-    return 0;
-}
-
-// Verify CRC checksum
-int verify_checksum(const char *message, unsigned int checksum) {
-    // CRC algorithm implementation
-    // ...
-    // Return 1 if the checksum is valid, 0 otherwise
-    return 0;
-}
 
 // Ouvrir les pipes de communication avec Python
 void open_pipes(char *py_to_c_name, char *c_to_py_name, int *py_to_c_fd, int *c_to_py_fd) {
@@ -60,6 +46,7 @@ int create_server_socket(char *port) {
         exit(EXIT_FAILURE);
     }
 
+
     return server_sockfd;
 }
 
@@ -88,6 +75,8 @@ void handle_communication(int py_to_c, int c_to_py, int client_sockfd, struct so
     char message[MAX_LENGTH];
     struct sockaddr_in peer_addr_recv;
     socklen_t peer_addr_len_recv = sizeof(peer_addr_recv);
+    char hash[65];
+    char message_with_hash[MAX_LENGTH + 65];
 
     while (1) {
         FD_ZERO(&readfds);
@@ -104,36 +93,51 @@ void handle_communication(int py_to_c, int c_to_py, int client_sockfd, struct so
         if (FD_ISSET(py_to_c, &readfds)) {
             // Lire une ligne depuis le pipe Python vers C
             if (read(py_to_c, message, MAX_LENGTH) > 0) {
-                // Calculate checksum
-                unsigned int checksum = calculate_checksum(message);
-
-                // Append checksum to the message
-                sprintf(message + strlen(message), "%u", checksum);
-
+                // Compute hash of the message
+                compute_sha256(message, hash);
+                // Append hash to the message
+                sprintf(message_with_hash, "%s%s", message, hash);
                 // Envoyer le message au pair
-                sendto(client_sockfd, message, strlen(message), 0, (struct sockaddr *)peer_addr, peer_addr_len);
+                sendto(client_sockfd, message_with_hash, strlen(message_with_hash), 0, (struct sockaddr *)peer_addr, peer_addr_len);
             }
         }
 
         if (FD_ISSET(sockfd, &readfds)) {
             // Recevoir un message du pair
-            if (recvfrom(sockfd, message, MAX_LENGTH, 0, (struct sockaddr *)&peer_addr_recv, &peer_addr_len_recv) > 0) {
-                // Extract checksum from the received message
-                unsigned int received_checksum = atoi(message + strlen(message) - sizeof(unsigned int));
-
-                // Verify checksum
-                if (verify_checksum(message, received_checksum)) {
-                    // Remove checksum from the message
-                    message[strlen(message) - sizeof(unsigned int)] = '\0';
-
+            if (recvfrom(sockfd, message_with_hash, MAX_LENGTH + 65, 0, (struct sockaddr *)&peer_addr_recv, &peer_addr_len_recv) > 0) {
+                // Split received message and hash
+                strncpy(message, message_with_hash, strlen(message_with_hash) - 64);
+                message[strlen(message_with_hash) - 64] = '\0';
+                strncpy(hash, message_with_hash + strlen(message_with_hash) - 64, 64);
+                hash[64] = '\0';
+                // Compute hash of received message
+                char computed_hash[65];
+                compute_sha256(message, computed_hash);
+                // Compare hashes
+                if(strcmp(hash, computed_hash) != 0) {
+                    // Hashes don't match, message integrity compromised
+                    printf("Message integrity compromised\n");
+                } else {
                     // Écrire le message dans le pipe C vers Python
                     write(c_to_py, message, strlen(message));
-                } else {
-                    printf("Checksum verification failed. Discarding the message.\n");
                 }
             }
         }
 
         memset(message, '\0', MAX_LENGTH);
+        memset(message_with_hash, '\0', MAX_LENGTH + 65);
     }
+}
+
+
+
+void compute_sha256(char *message, char outputBuffer[65]) {
+    unsigned char hash[SHA256_DIGEST_LENGTH];
+    SHA256_CTX sha256;
+    SHA256_Init(&sha256);
+    SHA256_Update(&sha256, message, strlen(message));
+    SHA256_Final(hash, &sha256);
+    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
+        sprintf(outputBuffer + (i * 2), "%02x", hash[i]);
+    outputBuffer[64] = 0;
 }
