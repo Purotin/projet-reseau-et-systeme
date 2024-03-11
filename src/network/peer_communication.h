@@ -1,8 +1,6 @@
 #ifndef PEER_COMMUNICATION_H
 #define PEER_COMMUNICATION_H
 
-#include <Winsock2.h>
-#include <fcntl.h>
 
 #define MAX_LENGTH 1024
 
