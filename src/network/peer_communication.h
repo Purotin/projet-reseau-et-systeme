@@ -1,7 +1,9 @@
 #ifndef PEER_COMMUNICATION_H
 #define PEER_COMMUNICATION_H
 
-
+#include <arpa/inet.h>
+#include <fcntl.h>
+#include <sys/socket.h>
 #define MAX_LENGTH 1024
 
 /**
