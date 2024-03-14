@@ -5,8 +5,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/time.h>
-#include <openssl/sha.h>
-#include <openssl/opensslv.h>
+#include <openssl/evp.h>
 
 #define MAX_LENGTH 1024
 
@@ -131,13 +130,23 @@ void handle_communication(int py_to_c, int c_to_py, int client_sockfd, struct so
 
 
 
+
+
 void compute_sha256(char *message, char outputBuffer[65]) {
-    unsigned char hash[SHA256_DIGEST_LENGTH];
-    SHA256_CTX sha256;
-    SHA256_Init(&sha256);
-    SHA256_Update(&sha256, message, strlen(message));
-    SHA256_Final(hash, &sha256);
-    for(int i = 0; i < SHA256_DIGEST_LENGTH; i++)
+    EVP_MD_CTX *mdctx;
+    const EVP_MD *md;
+    unsigned char hash[EVP_MAX_MD_SIZE];
+    unsigned int hashLen;
+
+    md = EVP_sha256();
+    mdctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(mdctx, md, NULL);
+    EVP_DigestUpdate(mdctx, message, strlen(message));
+    EVP_DigestFinal_ex(mdctx, hash, &hashLen);
+    EVP_MD_CTX_free(mdctx);
+
+    for (int i = 0; (unsigned int) i < hashLen; i++) {
         sprintf(outputBuffer + (i * 2), "%02x", hash[i]);
+    }
     outputBuffer[64] = 0;
 }
