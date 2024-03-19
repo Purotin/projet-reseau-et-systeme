@@ -1,15 +1,23 @@
-1 : 1 joueur regarde la partie à distance
-	1.1 : 1 personne envoie un msg à une autre personne en LAN
+1. Définition des unités de protocole
 
-	1.2 : Ajout de la gestion des joueurs dans le jeu
-		Est-ce que le jeu bloque en attendant le prochain joueur ? 	>>> 	Non
-		Comment gérer la priorité des actions des joueurs ? 		>>> 	Exemple : 
-													case = [bob_j1, bob_j2, nourriture_j2]	
-													j1 : bob_j1 mange nourriture_j2 -> j1 demande à j2 manger nourriture_j2 
-													j2 : laisse j1 manger nourriture_j2
-													j1 : bob_j1 mange nourriture_j2
-													j1 : diffuse nourriture_j2_case mangée
+Quelles données doivent être transmises ?
+Exemple : convertir un bob en un dictionnaire de type 
+{masse : XX, position_x : XX, position_y : XX, nb_tour, ...}
+Idem pour la grille (au début du jeu), les nouvelles nourritures, etc..
+Uniquement les informations nécessaires aux autres joueurs.
 
-	1.3 : Récupération des informations du jeu dans la partie réseau
-	1.4 : 
-2 :
+
+
+2. Gestion des propriétés réseaux
+
+Définir précisément la procédure de transmission des propriétés réseaux des objets pour permettre l'interaction entre des objets de différents joueurs.
+
+
+
+3. Gestion de la connexion entre deux joueurs
+
+Le joueur 2 rejoint la partie du joueur 1
+Le joueur 1 transmet les informations nécessaires au fonctionnement du jeu du joueur 2
+Exemple : taille de la grille, règles...
+Lancement du jeu du joueur 2
+
