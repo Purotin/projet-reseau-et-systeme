@@ -9,11 +9,11 @@ from os import path, makedirs
 
 from backend.Grid import *
 from backend.Settings import Settings
+from backend.Multi import *
 
 from frontend.Map import Map
 from frontend.Gui import Gui
 from frontend.DisplayStatsChart import DisplayStatsChart
-
 
 class Game:
 
@@ -71,6 +71,10 @@ class Game:
 
         elif type(grid) == str:
             self.loadSaveFile(grid)
+
+
+        #Network related variables
+        self.net = Network()
         
     # main loop
     def run(self):

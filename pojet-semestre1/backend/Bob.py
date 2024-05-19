@@ -3,6 +3,7 @@ from random import choice
 from backend.Effect import *
 from frontend.Sprite import *
 from backend.Settings import Settings
+from backend.Multi import *
 
 class Bob:
 
@@ -40,6 +41,10 @@ class Bob:
         self.generation = 0
 
         self.age = 0
+
+        #network properties
+        self.network_properties = Network.uuid_player
+        self.job_properties = Network.uuid_player
     
     def __str__(self):
         return "B"

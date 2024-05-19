@@ -3,6 +3,8 @@ from backend.Cell import Cell
 from backend.Bob import Bob
 from backend.Edible import *
 from backend.Effect import SpittedAt
+from backend.Multi import *
+
 from random import randint, choice
 from math import sqrt
 
@@ -550,6 +552,7 @@ class Grid:
    
         for b in bobsList:
             # Set the bob's action to idle if it is not dying
+            print(b.network_properties)
             if b.action != "decay":
                 b.action = "idle"
 

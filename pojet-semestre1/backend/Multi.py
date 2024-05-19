@@ -1,4 +1,5 @@
-import pickles
+import pickle
+import uuid
 
 
 def udpdateData(data, grid):
@@ -36,3 +37,19 @@ def udpdateData(data, grid):
 
 
             # {"id_bob" : {"position" : x , "value" : x}}
+
+
+
+class Network:
+
+    uuid_player = uuid.uuid4()
+
+    def __init__(self):
+        self.MULTI_TOGGLE = False
+
+    def toggleMultiplayer(self):
+        if not self.MULTI_TOGGLE:
+            self.MULTI_TOGGLE = True
+            print("Multiplayer mode activated")
+            print(Network.uuid_player)
+        #lauch all c command to make UDP diffusable

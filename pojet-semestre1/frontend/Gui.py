@@ -3,6 +3,7 @@ import pygame
 from frontend.frontendConstantes import *
 from backend.Settings import *
 from frontend.settingsWindow import SettingsWindow
+from backend.Multi import *
 
 import time
 
@@ -63,6 +64,11 @@ class Gui:
         font = pygame.font.SysFont('Arial', 25)  # Increase font size
         text = font.render(f"{bobCount}", True, (255,255,255))
         self.guiSurface.blit(text, (10 + bobImg.get_width() + 10, 10 + bobImg.get_height() / 2 - text.get_height() / 2))
+
+        # draw uuid of the player
+        text = font.render(f"Player uuid: {Network.uuid_player}", True, (255,255,255))
+        self.guiSurface.blit(text, (10, 10 + bobImg.get_height() + 10))
+
 
         # draw a day count indicator in the top right corner
         text = font.render(f"Day {self.game.grid.dayCount}", True, (255,255,255))
@@ -152,8 +158,8 @@ class Gui:
                 break
             
     def renderTooltip(self, bob, x, y, xTile, yTile):
-        tooltipWidth = 200
-        tooltipHeight = 140
+        tooltipWidth = 250
+        tooltipHeight = 260
 
         tooltip = pygame.Surface((tooltipWidth, tooltipHeight), pygame.SRCALPHA)
         pygame.draw.rect(tooltip, (0,0,0,200), (0, 0, tooltipWidth, tooltipHeight), border_radius=10)
@@ -161,7 +167,7 @@ class Gui:
         font = pygame.font.SysFont('Arial', 15)
 
         # energy
-        self.progressBar(10, 10, 180, 15, bob.energy / bob.energyMax, f"Energy: {int(bob.energy)} / {Settings.energyMax}", (194, 14, 14), tooltip)
+        self.progressBar(10, 10, 230, 15, bob.energy / bob.energyMax, f"Energy: {int(bob.energy)} / {Settings.energyMax}", (194, 14, 14), tooltip)
 
         # age
         text = font.render(f"Age: {bob.age} ticks", True, (255,255,255))
@@ -179,6 +185,24 @@ class Gui:
         text = font.render(f"Vision range: {bob.getPerceptionRange()} tiles", True, (255,255,255))
         tooltip.blit(text, (10, 90))
 
+        #bob id
+        text = font.render(f"Bob uuid:", True, (255,255,255))
+        tooltip.blit(text, (10, 110))
+        text = font.render(f"{bob.id}", True, (255,255,255))
+        tooltip.blit(text, (10, 130))
+
+        #bob network properties
+        text = font.render(f"Bob network properties uuid:", True, (255,255,255))
+        tooltip.blit(text, (10, 150))
+        text = font.render(f"{bob.network_properties}", True, (255,255,255))
+        tooltip.blit(text, (10, 170))
+
+        #bob job properties
+        text = font.render(f"Bob job properties uuid:", True, (255,255,255))
+        tooltip.blit(text, (10, 190))
+        text = font.render(f"{bob.job_properties}", True, (255,255,255))
+        tooltip.blit(text, (10, 210))
+
         # draw the outline of the vision area
 
         # get the center of the tile
@@ -191,7 +215,7 @@ class Gui:
         # memory -> no maximum so no progress bar just text
         memory = bob.foodMemory
         text = font.render(f"Memory: {len(memory)} out of {bob.getMemorySize()} objects", True, (255,255,255))
-        tooltip.blit(text, (10, 110))
+        tooltip.blit(text, (10, 230))
 
         # draw a rectangle around the memorized objects
         for obj in memory:
@@ -285,7 +309,7 @@ class Gui:
             
             # draw the pause menu
             pauseMenuWidth = 300
-            pauseMenuHeight = 440
+            pauseMenuHeight = 500
     
             pauseMenu = pygame.Surface((pauseMenuWidth, pauseMenuHeight), pygame.SRCALPHA)
             pygame.draw.rect(pauseMenu, (0,0,0,200), (0, 0, pauseMenuWidth, pauseMenuHeight), border_radius=10)
@@ -311,14 +335,17 @@ class Gui:
             # options button
             self.button(buttonX, buttonY + buttonHeight + 10, pauseMenuOffset, buttonWidth, buttonHeight, "Options", pauseMenu, lambda : SettingsWindow(self.game.createSaveFile, self.game.loadSaveFile))
     
+            #multiplayer button
+            self.button(buttonX, buttonY + 2 * (buttonHeight + 10), pauseMenuOffset, buttonWidth, buttonHeight, "Multiplayer", pauseMenu, lambda : self.game.net.toggleMultiplayer())
+
             # editor mode button
-            self.button(buttonX, buttonY + 2 * (buttonHeight + 10), pauseMenuOffset, buttonWidth, buttonHeight, "Editor mode", pauseMenu, lambda : [setattr(self.game, "editorMode", not self.game.editorMode), setattr(self, "displayPauseMenu", not getattr(self, "displayPauseMenu")), setattr(self.game, "renderHeight", False)],)
+            self.button(buttonX, buttonY + 3 * (buttonHeight + 10), pauseMenuOffset, buttonWidth, buttonHeight, "Editor mode", pauseMenu, lambda : [setattr(self.game, "editorMode", not self.game.editorMode), setattr(self, "displayPauseMenu", not getattr(self, "displayPauseMenu")), setattr(self.game, "renderHeight", False)],)
 
             # Follow best bob button
-            self.button(buttonX, buttonY + 3 * (buttonHeight + 10), pauseMenuOffset, buttonWidth, buttonHeight, "Follow best bob", pauseMenu, self.followBestBobButtonWithCooldown)
+            self.button(buttonX, buttonY + 4 * (buttonHeight + 10), pauseMenuOffset, buttonWidth, buttonHeight, "Follow best bob", pauseMenu, self.followBestBobButtonWithCooldown)
             
             # quit button
-            self.button(buttonX, buttonY + 4 * (buttonHeight + 10), pauseMenuOffset, buttonWidth, buttonHeight, "Quit", pauseMenu, lambda : setattr(self.game, "running", False))
+            self.button(buttonX, buttonY + 5 * (buttonHeight + 10), pauseMenuOffset, buttonWidth, buttonHeight, "Quit", pauseMenu, lambda : setattr(self.game, "running", False))
     
 
             self.guiSurface.blit(pauseMenu, (self.guiSurface.get_width() / 2 - pauseMenuWidth / 2, self.guiSurface.get_height() / 2 - pauseMenuHeight / 2))
