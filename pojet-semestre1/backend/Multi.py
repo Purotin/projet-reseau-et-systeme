@@ -51,5 +51,4 @@ class Network:
         if not self.MULTI_TOGGLE:
             self.MULTI_TOGGLE = True
             print("Multiplayer mode activated")
-            print(Network.uuid_player)
         #lauch all c command to make UDP diffusable

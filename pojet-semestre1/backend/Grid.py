@@ -552,7 +552,6 @@ class Grid:
    
         for b in bobsList:
             # Set the bob's action to idle if it is not dying
-            print(b.network_properties)
             if b.action != "decay":
                 b.action = "idle"
 

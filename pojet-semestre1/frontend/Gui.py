@@ -4,6 +4,7 @@ from frontend.frontendConstantes import *
 from backend.Settings import *
 from frontend.settingsWindow import SettingsWindow
 from backend.Multi import *
+from backend.Edible import Edible
 
 import time
 
@@ -156,82 +157,133 @@ class Gui:
             if mouseX >= xScreen + self.map.xScreenOffset and mouseX <= xScreen + self.map.xScreenOffset + tileTotalWidthOriginal * self.map.scaleMultiplier and mouseY >= yScreen + self.map.yScreenOffset - (tileTotalHeightOriginal * self.map.scaleMultiplier) / 2 and mouseY <= yScreen + self.map.yScreenOffset + (tileTotalHeightOriginal * self.map.scaleMultiplier) / 2:
                 self.renderTooltip(bob, mouseX, mouseY, xTile - 1, yTile - 1)
                 break
-            
-    def renderTooltip(self, bob, x, y, xTile, yTile):
-        tooltipWidth = 250
-        tooltipHeight = 260
+        
+        for edible in self.game.grid.getAllEdibleObjects():
+                
+                # The tile the food is supposed to be on
+                xTile = edible.x - self.map.worldXoffset
+                yTile = edible.y - self.map.worldYoffset
+        
+                # The tile the bob is actually on (can be between two real tiles)
+                animatedXTile = edible.x - self.map.worldXoffset
+                animatedYTile = edible.y - self.map.worldYoffset
 
-        tooltip = pygame.Surface((tooltipWidth, tooltipHeight), pygame.SRCALPHA)
-        pygame.draw.rect(tooltip, (0,0,0,200), (0, 0, tooltipWidth, tooltipHeight), border_radius=10)
+                # don't display entities outside the screen
+                if xTile < 0 or xTile > self.map.width or yTile < 0 or yTile > self.map.height:
+                    continue
+                
+                height = self.map.getHeightAt(bob.currentX, bob.currentY) * ((tileTotalHeightOriginal * self.map.scaleMultiplier) / 2 - 2) # 2 = height of the "hole" in the tile
+
+                xScreen = (self.map.terrainSurface.get_width() - self.map.width*self.map.scaleMultiplier*tileTotalWidthOriginal)/2 + self.map.terrainSurface.get_width() / 2 + (animatedXTile-2) * (tileTotalWidthOriginal * self.map.scaleMultiplier) / 2 -  + animatedYTile * (tileTotalWidthOriginal * self.map.scaleMultiplier) / 2
+                yScreen = animatedYTile * (tileVisibleHeightOriginal * self.map.scaleMultiplier) / 2 + animatedXTile * (tileVisibleHeightOriginal * self.map.scaleMultiplier) / 2 - height
+
+                if mouseX >= xScreen + self.map.xScreenOffset and mouseX <= xScreen + self.map.xScreenOffset + tileTotalWidthOriginal * self.map.scaleMultiplier and mouseY >= yScreen + self.map.yScreenOffset - (tileTotalHeightOriginal * self.map.scaleMultiplier) / 2 and mouseY <= yScreen + self.map.yScreenOffset + (tileTotalHeightOriginal * self.map.scaleMultiplier) / 2:
+                    self.renderTooltip(edible, mouseX, mouseY, xTile - 1, yTile - 1)
+                    break
+            
+    def renderTooltip(self, objs, x, y, xTile, yTile):
+        
 
         font = pygame.font.SysFont('Arial', 15)
 
-        # energy
-        self.progressBar(10, 10, 230, 15, bob.energy / bob.energyMax, f"Energy: {int(bob.energy)} / {Settings.energyMax}", (194, 14, 14), tooltip)
+        if isinstance(objs, Edible):
+            tooltipWidth = 250
+            tooltipHeight = 140
 
-        # age
-        text = font.render(f"Age: {bob.age} ticks", True, (255,255,255))
-        tooltip.blit(text, (10, 30))
+            tooltip = pygame.Surface((tooltipWidth, tooltipHeight), pygame.SRCALPHA)
+            pygame.draw.rect(tooltip, (0,0,0,200), (0, 0, tooltipWidth, tooltipHeight), border_radius=10)
 
-        # mass -> no maximum so no progress bar just text
-        text = font.render(f"Mass: {bob.mass:.1f}", True, (255,255,255))
-        tooltip.blit(text, (10, 50))
-        
-        # velocity -> no maximum so no progress bar just text
-        text = font.render(f"Velocity: {bob.velocity:.1f} tile/tick", True, (255,255,255))
-        tooltip.blit(text, (10, 70))
+            # id
+            text = font.render(f"Food id:", True, (255,255,255))
+            tooltip.blit(text, (10, 10))
+            text = font.render(f"{objs.id}", True, (255,255,255))
+            tooltip.blit(text, (10, 30))
 
-        # perception -> no maximum so no progress bar just text
-        text = font.render(f"Vision range: {bob.getPerceptionRange()} tiles", True, (255,255,255))
-        tooltip.blit(text, (10, 90))
+            #network properties
+            text = font.render(f"Food network properties:", True, (255,255,255))
+            tooltip.blit(text, (10, 50))
+            text = font.render(f"{objs.network_properties}", True, (255,255,255))
+            tooltip.blit(text, (10, 70))
 
-        #bob id
-        text = font.render(f"Bob uuid:", True, (255,255,255))
-        tooltip.blit(text, (10, 110))
-        text = font.render(f"{bob.id}", True, (255,255,255))
-        tooltip.blit(text, (10, 130))
+            #job properties
+            text = font.render(f"Food job properties:", True, (255,255,255))
+            tooltip.blit(text, (10, 90))
+            text = font.render(f"{objs.job_properties}", True, (255,255,255))
+            tooltip.blit(text, (10, 110))
+            
+        else:
+            tooltipWidth = 250
+            tooltipHeight = 260
 
-        #bob network properties
-        text = font.render(f"Bob network properties uuid:", True, (255,255,255))
-        tooltip.blit(text, (10, 150))
-        text = font.render(f"{bob.network_properties}", True, (255,255,255))
-        tooltip.blit(text, (10, 170))
+            tooltip = pygame.Surface((tooltipWidth, tooltipHeight), pygame.SRCALPHA)
+            pygame.draw.rect(tooltip, (0,0,0,200), (0, 0, tooltipWidth, tooltipHeight), border_radius=10)
 
-        #bob job properties
-        text = font.render(f"Bob job properties uuid:", True, (255,255,255))
-        tooltip.blit(text, (10, 190))
-        text = font.render(f"{bob.job_properties}", True, (255,255,255))
-        tooltip.blit(text, (10, 210))
+            # energy
+            self.progressBar(10, 10, 230, 15, objs.energy / objs.energyMax, f"Energy: {int(objs.energy)} / {Settings.energyMax}", (194, 14, 14), tooltip)
 
-        # draw the outline of the vision area
+            # age
+            text = font.render(f"Age: {objs.age} ticks", True, (255,255,255))
+            tooltip.blit(text, (10, 30))
 
-        # get the center of the tile
-        
-        tileCenterX = (self.map.terrainSurface.get_width() - self.map.width*self.map.scaleMultiplier*tileTotalWidthOriginal)/2 + self.map.terrainSurface.get_width() / 2 + (xTile-1) * (tileTotalWidthOriginal * self.map.scaleMultiplier) / 2 - (yTile) * (tileTotalWidthOriginal * self.map.scaleMultiplier) / 2 + self.map.xScreenOffset
-        tileCenterY = (yTile + 2) * (tileVisibleHeightOriginal * self.map.scaleMultiplier) / 2 + (xTile-1) * (tileVisibleHeightOriginal * self.map.scaleMultiplier) / 2 + self.map.yScreenOffset
+            # mass -> no maximum so no progress bar just text
+            text = font.render(f"Mass: {objs.mass:.1f}", True, (255,255,255))
+            tooltip.blit(text, (10, 50))
+            
+            # velocity -> no maximum so no progress bar just text
+            text = font.render(f"Velocity: {objs.velocity:.1f} tile/tick", True, (255,255,255))
+            tooltip.blit(text, (10, 70))
 
-        self.drawManhattanCircle(tileCenterX, tileCenterY, bob.getPerceptionRange(), self.guiSurface, xTile, yTile)
+            # perception -> no maximum so no progress bar just text
+            text = font.render(f"Vision range: {objs.getPerceptionRange()} tiles", True, (255,255,255))
+            tooltip.blit(text, (10, 90))
 
-        # memory -> no maximum so no progress bar just text
-        memory = bob.foodMemory
-        text = font.render(f"Memory: {len(memory)} out of {bob.getMemorySize()} objects", True, (255,255,255))
-        tooltip.blit(text, (10, 230))
+            #bob id
+            text = font.render(f"Bob uuid:", True, (255,255,255))
+            tooltip.blit(text, (10, 110))
+            text = font.render(f"{objs.id}", True, (255,255,255))
+            tooltip.blit(text, (10, 130))
 
-        # draw a rectangle around the memorized objects
-        for obj in memory:
-            objX = obj[0] - self.map.worldXoffset
-            objY = obj[1] - self.map.worldYoffset
+            #bob network properties
+            text = font.render(f"Bob network properties uuid:", True, (255,255,255))
+            tooltip.blit(text, (10, 150))
+            text = font.render(f"{objs.network_properties}", True, (255,255,255))
+            tooltip.blit(text, (10, 170))
 
-            # don't display entities outside the screen
-            if objX < 0 or objX > self.map.width or objY < 0 or objY > self.map.height:
-                continue
+            #bob job properties
+            text = font.render(f"Bob job properties uuid:", True, (255,255,255))
+            tooltip.blit(text, (10, 190))
+            text = font.render(f"{objs.job_properties}", True, (255,255,255))
+            tooltip.blit(text, (10, 210))
 
-            objHeight = self.map.getHeightAt(objX, objY) * ((tileTotalHeightOriginal * self.map.scaleMultiplier) / 2 - 2)
+            # draw the outline of the vision area
 
-            objXScreen = (self.map.terrainSurface.get_width() - self.map.width*self.map.scaleMultiplier*tileTotalWidthOriginal)/2 + self.map.terrainSurface.get_width() / 2 + (objX-2) * (tileTotalWidthOriginal * self.map.scaleMultiplier) / 2 -  + objY * (tileTotalWidthOriginal * self.map.scaleMultiplier) / 2
-            objYScreen = objY * (tileVisibleHeightOriginal * self.map.scaleMultiplier) / 2 + objX * (tileVisibleHeightOriginal * self.map.scaleMultiplier) / 2 - objHeight
+            # get the center of the tile
+            
+            tileCenterX = (self.map.terrainSurface.get_width() - self.map.width*self.map.scaleMultiplier*tileTotalWidthOriginal)/2 + self.map.terrainSurface.get_width() / 2 + (xTile-1) * (tileTotalWidthOriginal * self.map.scaleMultiplier) / 2 - (yTile) * (tileTotalWidthOriginal * self.map.scaleMultiplier) / 2 + self.map.xScreenOffset
+            tileCenterY = (yTile + 2) * (tileVisibleHeightOriginal * self.map.scaleMultiplier) / 2 + (xTile-1) * (tileVisibleHeightOriginal * self.map.scaleMultiplier) / 2 + self.map.yScreenOffset
 
-            pygame.draw.rect(self.guiSurface, (255,255,255), (objXScreen + self.map.xScreenOffset, objYScreen + self.map.yScreenOffset - (tileTotalHeightOriginal * self.map.scaleMultiplier) / 2, tileTotalWidthOriginal * self.map.scaleMultiplier, tileTotalHeightOriginal * self.map.scaleMultiplier), width=2)
+            self.drawManhattanCircle(tileCenterX, tileCenterY, objs.getPerceptionRange(), self.guiSurface, xTile, yTile)
+
+            # memory -> no maximum so no progress bar just text
+            memory = objs.foodMemory
+            text = font.render(f"Memory: {len(memory)} out of {objs.getMemorySize()} objects", True, (255,255,255))
+            tooltip.blit(text, (10, 230))
+
+            # draw a rectangle around the memorized objects
+            for obj in memory:
+                objX = obj[0] - self.map.worldXoffset
+                objY = obj[1] - self.map.worldYoffset
+
+                # don't display entities outside the screen
+                if objX < 0 or objX > self.map.width or objY < 0 or objY > self.map.height:
+                    continue
+
+                objHeight = self.map.getHeightAt(objX, objY) * ((tileTotalHeightOriginal * self.map.scaleMultiplier) / 2 - 2)
+
+                objXScreen = (self.map.terrainSurface.get_width() - self.map.width*self.map.scaleMultiplier*tileTotalWidthOriginal)/2 + self.map.terrainSurface.get_width() / 2 + (objX-2) * (tileTotalWidthOriginal * self.map.scaleMultiplier) / 2 -  + objY * (tileTotalWidthOriginal * self.map.scaleMultiplier) / 2
+                objYScreen = objY * (tileVisibleHeightOriginal * self.map.scaleMultiplier) / 2 + objX * (tileVisibleHeightOriginal * self.map.scaleMultiplier) / 2 - objHeight
+
+                pygame.draw.rect(self.guiSurface, (255,255,255), (objXScreen + self.map.xScreenOffset, objYScreen + self.map.yScreenOffset - (tileTotalHeightOriginal * self.map.scaleMultiplier) / 2, tileTotalWidthOriginal * self.map.scaleMultiplier, tileTotalHeightOriginal * self.map.scaleMultiplier), width=2)
 
         self.guiSurface.blit(tooltip, (x, y))
 

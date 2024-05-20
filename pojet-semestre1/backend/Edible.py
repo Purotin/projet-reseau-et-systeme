@@ -1,11 +1,16 @@
 from backend.Settings import Settings
 from backend.Effect import *
+from backend.Multi import *
+
 
 class Edible:
     def __init__(self, x, y, value=0):
         self.x = x
         self.y = y
         self.value = value
+        self.network_properties = Network.uuid_player
+        self.id = uuid.uuid4()
+        self.job_properties = Network.uuid_player
 
 class Food(Edible):
     def __init__(self, x, y, energy=Settings.spawnedFoodEnergy):
