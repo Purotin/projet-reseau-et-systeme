@@ -10,6 +10,8 @@ if __name__ == "__main__":
         grid = sys.argv[1]
     else:
         grid = Grid(10, 1, 0)
+        grid.addBob(Bob(0, 0))
+        grid.gridDict[(0, 0)].bobs[0].job_properties = uuid.uuid4()
 
     game = Game(grid, screenWidth=1080, screenHeight=750, dayLimit=0, noInterface=False)
 

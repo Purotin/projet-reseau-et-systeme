@@ -23,7 +23,6 @@ def udpdateData(data, grid):
                             bob.currentX = data[bob.id]['position'][0]
                             bob.currentY = data[bob.id]['position'][1]
                         bob.energy = data[bob.id]['energy'] if data[bob.id]['energy'] else bob.energy
-                        pass
 
             elif cell.edibleObject:
                 if cell.edibleObject.id in data:
@@ -31,7 +30,7 @@ def udpdateData(data, grid):
                         cell.edibleObject.x = data[cell.edibleObject.id]['position'][0]
                         cell.edibleObject.y = data[cell.edibleObject.id]['position'][1]
                     cell.edibleObject.value = data[cell.edibleObject.id]['value'] if data[cell.edibleObject.id]['value'] else cell.edibleObject.value
-                    pass
+
 
         return grid_copy
 
