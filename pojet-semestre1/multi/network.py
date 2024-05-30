@@ -1,4 +1,4 @@
-import pickle
+import os
 import uuid
 from pipe_handler import PipeHandler
 from data_updater import *
@@ -8,8 +8,10 @@ class Network:
     uuid_player = uuid.uuid4()
     pipes = PipeHandler()
 
-    def requestConnection():
-        pass
+    def requestConnection(IP, port):
+        command = f"./tmp/network_manager {IP} {port} py_to_c c_to_py &"
+        os.system(command)
+        Network.pipes.send("ConnectionRequest")
 
     def processBuffer():
         buffer = Network.pipes.recv()
@@ -37,9 +39,11 @@ class Network:
         # À COMPLÉTER AVEC LES AUTRES EN-TÊTES
 
     def processConnectionRequest():
-        pass
+        Network.pipes.send("ConnectionResponse")
 
     def processConnectionResponse():
+        # À COMPLÉTER
+        # Envoyer tous les objets du jeu
         pass   
     
     
