@@ -9,7 +9,7 @@ from os import path, makedirs
 
 from backend.Grid import *
 from backend.Settings import Settings
-from backend.Multi import *
+from multi.network import Network
 
 from frontend.Map import Map
 from frontend.Gui import Gui
@@ -71,10 +71,6 @@ class Game:
 
         elif type(grid) == str:
             self.loadSaveFile(grid)
-
-
-        #Network related variables
-        self.net = Network()
         
     # main loop
     def run(self):
@@ -102,6 +98,13 @@ class Game:
 
         # Game loop
         while self.running:
+            # GESTION DES DONNÉES RÉSEAU REÇUES
+
+
+            Network.processBuffer()
+
+
+
             # handle events
             self.events()
 
