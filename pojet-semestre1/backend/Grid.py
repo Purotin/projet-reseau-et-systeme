@@ -3,7 +3,7 @@ from backend.Cell import Cell
 from backend.Bob import Bob
 from backend.Edible import *
 from backend.Effect import SpittedAt
-from backend.Multi import *
+from multi.network import Network
 
 from random import randint, choice
 from math import sqrt
@@ -549,7 +549,7 @@ class Grid:
         """
         # Get a list of all bobs in the grid
         bobsList = self.getAllBobs()
-        bobsList = [b for b in bobsList if b.job_properties == Player.uuid_player]
+        bobsList = [b for b in bobsList if b.JobProperty == Network.uuid_player]
    
         for b in bobsList:
             # Set the bob's action to idle if it is not dying

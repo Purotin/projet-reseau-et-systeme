@@ -1,6 +1,7 @@
 from backend.Settings import Settings
 from backend.Effect import *
-from backend.Multi import *
+from multi.network import Network
+import uuid
 
 
 class Edible:
@@ -8,9 +9,9 @@ class Edible:
         self.x = x
         self.y = y
         self.value = value
-        self.network_properties = Network.uuid_player
+        self.NetworkProperty = Network.uuid_player
         self.id = uuid.uuid4()
-        self.job_properties = Network.uuid_player
+        self.JobProperty = Network.uuid_player
 
 class Food(Edible):
     def __init__(self, x, y, energy=Settings.spawnedFoodEnergy):
