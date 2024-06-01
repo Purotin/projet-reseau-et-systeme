@@ -11,24 +11,24 @@ int main(int argc, char *argv[]) {
 
     // Vérifier si le nombre d'arguments est correct
     if (argc != 5) {
-        fprintf(stderr, "Usage: %s <IP> <PORT> <py_to_c_NAME> <c_to_py_NAME>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <MULTICAST_IP> <PORT> <py_to_c_NAME> <c_to_py_NAME>\n", argv[0]);
         return 1;  // Terminer le programme avec un code d'erreur
     }
 
-    char *ip = argv[1];
+    char *multicast_ip = argv[1];
     char *port = argv[2];
     char *py_to_c_name = argv[3];
     char *c_to_py_name = argv[4];
 
-    // Ouvrir les pipes pour la communication entre Python et C
     int py_to_c, c_to_py;
+    // Ouvrir les pipes pour la communication entre Python et C
     open_pipes(py_to_c_name, c_to_py_name, &py_to_c, &c_to_py);
 
-    // Créer un socket pour agir en tant que serveur
-    server_sockfd = create_server_socket(port);
+    // Créer un socket pour agir en tant que serveur multicast
+    server_sockfd = create_server_socket(multicast_ip, port);
 
-    // Créer un socket pour agir en tant que client
-    client_sockfd = create_client_socket(ip, port, &peer_addr, &peer_addr_len);
+    // Créer un socket pour agir en tant que client multicast
+    client_sockfd = create_client_socket(multicast_ip, port, &peer_addr, &peer_addr_len);
 
     // Gérer la communication entre les deux sockets
     handle_communication(py_to_c, c_to_py, client_sockfd, &peer_addr, peer_addr_len, server_sockfd);
