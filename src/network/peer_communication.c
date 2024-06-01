@@ -94,7 +94,6 @@ void handle_communication(int py_to_c, int c_to_py, int client_sockfd, struct so
     char random_number_str[6];  // 4 chiffres + 1 caractère de fin de chaîne
 
     sprintf(random_number_str, "%d", (rand() % (9999 - 1000 + 1)) + 1000);
-    printf("Le nombre aléatoire généré est : %s\n", random_number_str);
 
     char my_ip[INET_ADDRSTRLEN];
 
