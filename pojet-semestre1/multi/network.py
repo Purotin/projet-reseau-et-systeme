@@ -3,6 +3,7 @@ import uuid
 from pipe_handler import PipeHandler
 from data_updater import *
 from properties_manager import *
+from backend import Bob
 
 class Network:
     uuid_player = uuid.uuid4()
@@ -33,18 +34,29 @@ class Network:
         # Si le message est une requête propriété réseau
         header = message.split(";")[0]
         if header == "NetworkProperty":
-            pass
+            processNetworkProperty(message)
+
         elif header == "ConnectionRequest":
-            pass
+            processConnectionRequest()
+        
+        elif header == "ConnectionResponse":
+            processConnectionResponse()
+        
+        elif header == "bob":
+            if message.split(';')[2] == 'position':
+                processBobMessage(message, 'position')
+            elif message.split(';')[3] == 'energy':
+                processBobMessage(message, 'energy')
+
+        elif header == "food":
+            processBobEatingFood(message)
+        
+        elif header == "newbob":
+            processBobCreation(message)
+
+        elif header == "newfood":
+            processFoodCreation(message)
         # À COMPLÉTER AVEC LES AUTRES EN-TÊTES
-
-    def processConnectionRequest():
-        Network.pipes.send("ConnectionResponse")
-
-    def processConnectionResponse():
-        # À COMPLÉTER
-        # Envoyer tous les objets du jeu
-        pass   
     
     
     
@@ -55,7 +67,7 @@ class Network:
 # bob mange bob             : {bob;id;None;energy}
 # bob mange nourriture      : {food;id;energy}
 # Création de bob           : {newbob;id;networkProperty;jobProperty;position;......}
-# Création de nourriture    : {
+# Création de nourriture    : {newfood;}
 # Réponse prop réseau       : {NetworkProperty;player_id;obj_id;networkProperty}
 # Requête de connexion      : {ConnectionRequest}
 # Réponse de connexion      : {ConnectionResponse}
