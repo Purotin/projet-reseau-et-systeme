@@ -7,7 +7,7 @@ from multi.network import Network
 
 class Bob:
 
-    def __init__(self, x = 0, y = 0, totalVelocity = None, mass = None, energy = None, perception = None, memorySize = None, maxAmmos = None):
+    def __init__(self, x = 0, y = 0, totalVelocity = None, mass = None, energy = None, perception = None, memorySize = None, maxAmmos = None, ID = None, Nproperty = None, Jproperty = None):
         
         # Physical properties
         self.totalVelocity = totalVelocity if not totalVelocity is None else Settings.spawnVelocity
@@ -35,7 +35,7 @@ class Bob:
         self.consumptionFactor = 1
         self.target = None
         # Unique id
-        self.id = uuid.uuid4()
+        self.id = ID if not ID is None else uuid.uuid4()
         # Sprite
         self.sprite = BobSprite(self)
         self.generation = 0
@@ -43,8 +43,8 @@ class Bob:
         self.age = 0
 
         #network properties
-        self.NetworkProperty = Network.uuid_player
-        self.JobProperty = Network.uuid_player
+        self.NetworkProperty = Nproperty if not Nproperty is None else Network.uuid_player
+        self.JobProperty = Jproperty if not Jproperty is None else Network.uuid_player
     
     def __str__(self):
         return "B"

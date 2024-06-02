@@ -731,3 +731,76 @@ class Grid:
                 bestBob = bob
         return bestBob
     
+    def updateBob(self, message):
+        """
+        This method updates a Bob object based on a message received from the network.
+        It retrieves the Bob object from the grid based on the message's ID.
+        If the Bob object is found, it updates the Bob object based on the message's data.
+
+        Parameters:
+        message (list): A list containing the message data.
+        """
+        # Retrieve the Bob object from the grid based on the message
+        bob = None
+        bobs = self.getBobsAt(message[1], message[2])
+    
+        for b in bobs:
+            if b.id == message[0]:
+                bob = b
+                break
+        if bob is None:
+            return None
+        
+        # Bob moved
+        if message[3] is not None:    
+            # Move the bob
+            self.moveBobTo(bob, message[3], message[4])
+
+        # Bob ate another bob or food
+        else:
+            # Update its energy
+            bob.energy = message[4]
+        
+        return 0
+    
+    def updateFood(self, message):
+        """
+        This method updates a Food object based on a message received from the network.
+        It retrieves the Food object from the grid based on the message's ID.
+        If the Food object is found, it updates the Food object based on the message's data.
+
+        Parameters:
+        message (list): A list containing the message data.
+        """
+        # Retrieve the Food object from the grid based on the message
+        food = self.getCellAt(message[1], message[2]).edibleObject
+        if food.id != message[0]:
+            return None
+        
+        # Update the food object
+        food.value = message[3]
+        return 0
+
+    def addBobFromMessage(self, message):
+        """
+        This method adds a Bob object to the grid based on a message received from the network.
+        It creates a new Bob object based on the message's data and adds it to the grid.
+
+        Parameters:
+        message (list): A list containing the message data.
+        """
+        # Create a new Bob object based on the message
+        newBob = Bob(message[0], message[1], message[2], message[3], message[4], message[5], message[6], message[7], message[8], message[9], message[10])
+        self.addBob(newBob)
+
+    def addFoodFromMessage(self, message):
+        """
+        This method adds a Food object to the grid based on a message received from the network.
+        It creates a new Food object based on the message's data and adds it to the grid.
+
+        Parameters:
+        message (list): A list containing the message data.
+        """
+        # Create a new Food object based on the message
+        newFood = Food(message[0], message[1], message[2], message[3], message[4], message[5])
+        self.addEdible(newFood)
