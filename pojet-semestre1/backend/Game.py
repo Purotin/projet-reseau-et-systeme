@@ -71,6 +71,9 @@ class Game:
 
         elif type(grid) == str:
             self.loadSaveFile(grid)
+
+        self.network = Network()
+        self.network.grid = self.grid
         
     # main loop
     def run(self):
@@ -101,8 +104,8 @@ class Game:
             # GESTION DES DONNÉES RÉSEAU REÇUES
 
 
-            Network.processBuffer()
-
+            #Network.processBuffer()
+            self.network.processBuffer()
 
 
             # handle events
