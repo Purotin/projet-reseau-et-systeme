@@ -13,9 +13,8 @@ if __name__ == "__main__":
     net.requestConnection("239.0.0.1", "1234")
     sleep(1) 
     buffer = net.pipes.recv()
-    print(buffer)
-    header = []
-
+    first_connection = True
+    final_message = ""
     start_index = None
     for i in range(len(buffer)):
     # Si le buffer contient un début de message
@@ -23,13 +22,17 @@ if __name__ == "__main__":
             start_index = i
         elif buffer[i] == "}":
             if start_index is not None:
-                message = buffer[start_index+1:i]
+                message = buffer[start_index+1:i].split(";")
                 start_index = None
-                #Network.processMessage(message)
-                header.append(message.split(";")[0])
+                if message[0] == "ConnectionResponse":
+                    first_connection = False
+                    final_message = message
+                    break
     
-    if "ConnectionResponse" in header:
-        print("ConnectionResponse received a game is already running, you are connected to it") 
+    if not first_connection:
+        print("ConnectionResponse received a game is already running, you are connected to it")
+        #-------A COMPLETER-------#
+        
     else:
         print("you are the first player, creating a new game")
         grid = Grid(20, 0, 0)

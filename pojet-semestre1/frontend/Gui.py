@@ -386,17 +386,14 @@ class Gui:
             # options button
             self.button(buttonX, buttonY + buttonHeight + 10, pauseMenuOffset, buttonWidth, buttonHeight, "Options", pauseMenu, lambda : SettingsWindow(self.game.createSaveFile, self.game.loadSaveFile))
     
-            #multiplayer button
-            self.button(buttonX, buttonY + 2 * (buttonHeight + 10), pauseMenuOffset, buttonWidth, buttonHeight, "Multiplayer", pauseMenu, lambda : self.game.net.toggleMultiplayer())
-
             # editor mode button
-            self.button(buttonX, buttonY + 3 * (buttonHeight + 10), pauseMenuOffset, buttonWidth, buttonHeight, "Editor mode", pauseMenu, lambda : [setattr(self.game, "editorMode", not self.game.editorMode), setattr(self, "displayPauseMenu", not getattr(self, "displayPauseMenu")), setattr(self.game, "renderHeight", False)],)
+            self.button(buttonX, buttonY + 2 * (buttonHeight + 10), pauseMenuOffset, buttonWidth, buttonHeight, "Editor mode", pauseMenu, lambda : [setattr(self.game, "editorMode", not self.game.editorMode), setattr(self, "displayPauseMenu", not getattr(self, "displayPauseMenu")), setattr(self.game, "renderHeight", False)],)
 
             # Follow best bob button
-            self.button(buttonX, buttonY + 4 * (buttonHeight + 10), pauseMenuOffset, buttonWidth, buttonHeight, "Follow best bob", pauseMenu, self.followBestBobButtonWithCooldown)
+            self.button(buttonX, buttonY + 3 * (buttonHeight + 10), pauseMenuOffset, buttonWidth, buttonHeight, "Follow best bob", pauseMenu, self.followBestBobButtonWithCooldown)
             
             # quit button
-            self.button(buttonX, buttonY + 5 * (buttonHeight + 10), pauseMenuOffset, buttonWidth, buttonHeight, "Quit", pauseMenu, lambda : setattr(self.game, "running", False))
+            self.button(buttonX, buttonY + 4 * (buttonHeight + 10), pauseMenuOffset, buttonWidth, buttonHeight, "Quit", pauseMenu, lambda : setattr(self.game, "running", False))
     
 
             self.guiSurface.blit(pauseMenu, (self.guiSurface.get_width() / 2 - pauseMenuWidth / 2, self.guiSurface.get_height() / 2 - pauseMenuHeight / 2))

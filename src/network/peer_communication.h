@@ -42,8 +42,9 @@ int create_client_socket(char *multicast_ip, char *port, struct sockaddr_in *pee
  * @param peer_addr L'adresse du pair.
  * @param peer_addr_len La longueur de l'adresse du pair.
  * @param sockfd Le descripteur de fichier du socket serveur.
+ * @param UUID_Player L'identifiant unique du joueur.
  */
-void handle_communication(int py_to_c, int c_to_py, int client_sockfd, struct sockaddr_in *peer_addr, socklen_t peer_addr_len, int sockfd);
+void handle_communication(int py_to_c, int c_to_py, int client_sockfd, struct sockaddr_in *peer_addr, socklen_t peer_addr_len, int sockfd, char *UUID_Player);
 
 
 #endif // PEER_COMMUNICATION_H

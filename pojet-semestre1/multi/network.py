@@ -22,7 +22,6 @@ class Network:
     def processBuffer(self):
         #buffer = Network.pipes.recv()
         buffer = self.pipes.recv()
-        print("----------------",buffer)
 
         start_index = None
         for i in range(len(buffer)):
@@ -45,7 +44,6 @@ class Network:
 
         match header:
             case "ConnectionRequest":
-                print(message)
                 self.processConnectionRequest(message)
 
             case "ConnectionResponse":
@@ -70,13 +68,12 @@ class Network:
                 self.processNewFood(message)
 
     def requestConnection(self, IP, port):
-        command = f"./multi/network_manager {IP} {port} py_to_c c_to_py &"
+        command = f"./multi/network_manager {IP} {port} py_to_c c_to_py {self.uuid_player}&"
         os.system(command)
         #Network.pipes.send("ConnectionRequest")
         strUuid = str(self.uuid_player)
         self.pipes = PipeHandler()
         self.pipes.send("{ConnectionRequest;"+strUuid+"}")
-        print("Connection request sent")
         
 
                 
