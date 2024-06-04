@@ -3,7 +3,7 @@ from random import choice
 from backend.Effect import *
 from frontend.Sprite import *
 from backend.Settings import Settings
-from multi.network import Network
+# from multi.network import Network
 
 class Bob:
 
@@ -43,8 +43,8 @@ class Bob:
         self.age = 0
 
         #network properties
-        self.NetworkProperty = Nproperty if not Nproperty is None else Network.uuid_player
-        self.JobProperty = Jproperty if not Jproperty is None else Network.uuid_player
+        # self.NetworkProperty = Nproperty if not Nproperty is None else Network.uuid_player
+        # self.JobProperty = Jproperty if not Jproperty is None else Network.uuid_player
     
     def __str__(self):
         return "B"

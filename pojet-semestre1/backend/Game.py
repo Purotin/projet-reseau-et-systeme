@@ -17,7 +17,7 @@ from frontend.DisplayStatsChart import DisplayStatsChart
 
 class Game:
 
-    def __init__(self, grid, screenWidth=930, screenHeight=640, dayLimit = 0, noInterface=False):
+    def __init__(self, grid, screenWidth=930, screenHeight=640, dayLimit = 0, noInterface=False, network=None):
         
         pygame.init()
 
@@ -72,7 +72,7 @@ class Game:
         elif type(grid) == str:
             self.loadSaveFile(grid)
 
-        self.network = Network()
+        self.network = Network() if network is None else network
         self.network.grid = self.grid
         
     # main loop

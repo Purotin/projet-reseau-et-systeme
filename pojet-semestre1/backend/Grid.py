@@ -561,7 +561,7 @@ class Grid:
         """
         # Get a list of all bobs in the grid
         bobsList = self.getAllBobs()
-        bobsList = [b for b in bobsList if b.JobProperty == Network.uuid_player]
+        bobsList = [b for b in self.getAllBobs() if b.id in self.npropertyDict.keys()]
    
         for b in bobsList:
             # Set the bob's action to idle if it is not dying

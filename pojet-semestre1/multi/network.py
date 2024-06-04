@@ -1,8 +1,9 @@
 import os
 import uuid
-from pipe_handler import PipeHandler
-from data_updater import *
-from properties_manager import *
+from multi.data_updater import *
+from multi.properties_manager import *
+from multi.pipe_handler import PipeHandler
+
 
 class Network:
     
@@ -11,13 +12,17 @@ class Network:
     
     def __init__(self):
         self.uuid_player = uuid.uuid4()
-        self.pipes = PipeHandler()
         self.grid = None
+        
+    def disconnect(self):
+        self.pipes.send("{Disconnect;"+str(self.uuid_player)+"}")
+        self.pipes.close()
 
     
     def processBuffer(self):
         #buffer = Network.pipes.recv()
         buffer = self.pipes.recv()
+        print("----------------",buffer)
 
         start_index = None
         for i in range(len(buffer)):
@@ -35,10 +40,12 @@ class Network:
         # Traiter le message
         
         # Si le message est une requête propriété réseau
-        header = message.split(";")[0]
+        message = message.split(";")
+        header = message[0]
 
         match header:
             case "ConnectionRequest":
+                print(message)
                 self.processConnectionRequest(message)
 
             case "ConnectionResponse":
@@ -63,10 +70,14 @@ class Network:
                 self.processNewFood(message)
 
     def requestConnection(self, IP, port):
-        command = f"./tmp/network_manager {IP} {port} py_to_c c_to_py &"
+        command = f"./multi/network_manager {IP} {port} py_to_c c_to_py &"
         os.system(command)
         #Network.pipes.send("ConnectionRequest")
-        self.pipes.send("{ConnectionRequest;"+self.uuid_player+"}")
+        strUuid = str(self.uuid_player)
+        self.pipes = PipeHandler()
+        self.pipes.send("{ConnectionRequest;"+strUuid+"}")
+        print("Connection request sent")
+        
 
                 
     def processConnectionRequest(self, message):

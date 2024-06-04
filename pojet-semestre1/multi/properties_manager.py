@@ -1,4 +1,3 @@
-from multi.network import Player
 
 def requestNetworkProperty(object):
     id = object.id
