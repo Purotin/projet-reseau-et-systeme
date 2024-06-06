@@ -22,7 +22,6 @@ def processBobMessage(message, prop):
 
 
 def processBobEatingFood(message):
-    
     # bob mange nourriture      : {food;id;energy}
     
     message_parts = message.split(";")
@@ -34,6 +33,14 @@ def processBobEatingFood(message):
     #Mettre à jour le résultat reçu dans le jeu
 
 def processNetworkProperty(message):
+    message_parts = message.split(";")
+    player_id = message_parts[1]
+    obj_id = message_parts[2]
+    
+    # Retrieve network property
+    network_property = Game.get_network_property(obj_id)
+    
+    Network.pipes.send(f"NetworkPropertyResponse;{player_id};{obj_id};{network_property}")
     pass
 
 def processBobCreation(message):
@@ -55,10 +62,28 @@ def processBobCreation(message):
 # def processBobCreation():
 #     pass
 
-def processFoodCreation():
+def processFoodCreation(message):
+    message_parts = message.split(";")
+    new_bob = {
+        "id": message_parts[1],
+        "network_property": message_parts[2],
+        "job_property": message_parts[3],
+        "position": eval(message_parts[4])
+    }
+    
+    bob = Bob(id=new_bob["id"], x=new_bob["position"][0], y=new_bob["position"][1])
+    Game.add_bob(bob)
+    Network.pipes.send(f"BobCreated;{bob.id};{bob.network_property};{bob.job_property};{bob.position}")
     pass
 
-def processBobMovement():
+def processBobMovement(message):
+    message_parts = message.split(";")
+    bob_id = message_parts[1]
+    new_position = eval(message_parts[2])
+    
+    bob = Game.get_bob_by_id(bob_id)
+    bob.update_position(new_position)
+    Network.pipes.send(f"BobMoved;{bob.id};{new_position}")
     pass
 
 # def processBobEatingBob():
