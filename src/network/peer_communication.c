@@ -5,7 +5,11 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/time.h>
-
+#include <fcntl.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <time.h>
 #define MAX_LENGTH 1024
 
 int py_to_c, c_to_py;
@@ -24,10 +28,11 @@ void open_pipes(char *py_to_c_name, char *c_to_py_name, int *py_to_c_fd, int *c_
     }
 }
 
-// Créer un socket pour agir en tant que serveur
-int create_server_socket(char *port) {
+// Créer un socket pour agir en tant que serveur multicast
+int create_server_socket(char *multicast_ip, char *port) {
     struct sockaddr_in server_addr;
     int server_sockfd;
+    struct ip_mreq mreq;
 
     // Créer un socket pour agir en tant que serveur
     if ((server_sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
@@ -44,12 +49,20 @@ int create_server_socket(char *port) {
         exit(EXIT_FAILURE);
     }
 
+    // Rejoindre le groupe multicast
+    mreq.imr_multiaddr.s_addr = inet_addr(multicast_ip);
+    mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+    if (setsockopt(server_sockfd, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char *)&mreq, sizeof(mreq)) < 0) {
+        perror("Erreur lors de l'adhésion au groupe multicast");
+        exit(EXIT_FAILURE);
+    }
 
     return server_sockfd;
 }
 
-// Créer un socket pour agir en tant que client
-int create_client_socket(char *ip, char *port, struct sockaddr_in *peer_addr, socklen_t *peer_addr_len) {
+
+// Créer un socket pour agir en tant que client multicast
+int create_client_socket(char *multicast_ip, char *port, struct sockaddr_in *peer_addr, socklen_t *peer_addr_len) {
     int client_sockfd;
 
     // Créer un socket pour agir en tant que client
@@ -60,19 +73,45 @@ int create_client_socket(char *ip, char *port, struct sockaddr_in *peer_addr, so
 
     peer_addr->sin_family = AF_INET;
     peer_addr->sin_port = htons(atoi(port));  // Se connecter au port du pair
-    peer_addr->sin_addr.s_addr = inet_addr(ip);  // Se connecter à l'adresse IP du pair   
+    peer_addr->sin_addr.s_addr = inet_addr(multicast_ip);  // Se connecter à l'adresse IP multicast   
 
     *peer_addr_len = sizeof(*peer_addr);
 
     return client_sockfd;
 }
 
+
+
 // Lire les messages du pair et les écrire dans le pipe vers Python
-void handle_communication(int py_to_c, int c_to_py, int client_sockfd, struct sockaddr_in *peer_addr, socklen_t peer_addr_len, int sockfd) { 
+void handle_communication(int py_to_c, int c_to_py, int client_sockfd, struct sockaddr_in *peer_addr, socklen_t peer_addr_len, int sockfd, char *UUID_Player) { 
     fd_set readfds;
     char message[MAX_LENGTH];
     struct sockaddr_in peer_addr_recv;
     socklen_t peer_addr_len_recv = sizeof(peer_addr_recv);
+    
+    srand(time(0));
+
+    char random_number_str[6];  // 4 chiffres + 1 caractère de fin de chaîne
+
+    sprintf(random_number_str, "%d", (rand() % (9999 - 1000 + 1)) + 1000);
+
+    char my_ip[INET_ADDRSTRLEN];
+
+    sendto(client_sockfd, &random_number_str, sizeof(random_number_str), 0, (struct sockaddr *)peer_addr, peer_addr_len);
+
+    // Attendre que nous recevions notre propre adresse IP
+    // while (1) {
+    //     int num_bytes_recv = recvfrom(sockfd, message, MAX_LENGTH, 0, (struct sockaddr *)&peer_addr_recv, &peer_addr_len_recv);
+    //     if (num_bytes_recv > 0) {
+    //         message[num_bytes_recv] = '\0';  // Assurez-vous que le message est terminé
+    //         if (strcmp(message, random_number_str) == 0) {
+    //             inet_ntop(AF_INET, &(peer_addr_recv.sin_addr), my_ip, INET_ADDRSTRLEN);
+    //             memset(message, '\0', MAX_LENGTH);
+    //             break;
+    //         }
+            
+    //     }
+    // }
 
     while (1) {
         FD_ZERO(&readfds);
@@ -87,18 +126,37 @@ void handle_communication(int py_to_c, int c_to_py, int client_sockfd, struct so
         }
 
         if (FD_ISSET(py_to_c, &readfds)) {
-                // Lire une ligne depuis le pipe Python vers C
-                if (read(py_to_c, message, MAX_LENGTH) > 0) {
-                    // Envoyer le message au pair
-                    sendto(client_sockfd, message, strlen(message), 0, (struct sockaddr *)peer_addr, peer_addr_len);
+            // Lire une ligne depuis le pipe Python vers C
+            int num_bytes_read = read(py_to_c, message, MAX_LENGTH);
+            if (num_bytes_read > 0) {
+                message[num_bytes_read] = '\0';  // Assurez-vous que le message est terminé
+                // Envoyer le message au pair
+                //regarde si il ya le mot clé "disconnect" et uuid_player dans le message
+                if (strstr(message, "Disconnect") != NULL && strstr(message, UUID_Player) != NULL){
+                    //envoyer un message de déconnexion au pair
+                    sendto(client_sockfd, message, num_bytes_read, 0, (struct sockaddr *)peer_addr, peer_addr_len);
+                    //fermer les sockets
+                    close(client_sockfd);
+                    close(sockfd);
+                    close(py_to_c);
+                    close(c_to_py);
+                    exit(EXIT_SUCCESS);
                 }
+                sendto(client_sockfd, message, num_bytes_read, 0, (struct sockaddr *)peer_addr, peer_addr_len);
             }
+        }
 
         if (FD_ISSET(sockfd, &readfds)) {
             // Recevoir un message du pair
-            if (recvfrom(sockfd, message, MAX_LENGTH, 0, (struct sockaddr *)&peer_addr_recv, &peer_addr_len_recv) > 0) {
+            int num_bytes_recv = recvfrom(sockfd, message, MAX_LENGTH, 0, (struct sockaddr *)&peer_addr_recv, &peer_addr_len_recv);
+            if (num_bytes_recv > 0) {
+                message[num_bytes_recv] = '\0';  // Assurez-vous que le message est terminé
                 // Écrire le message dans le pipe C vers Python
-                write(c_to_py, message, strlen(message));
+                
+                //tester si le message vient de my_ip
+                if (strcmp(inet_ntoa(peer_addr_recv.sin_addr), my_ip) != 0) {
+                    write(c_to_py, message, num_bytes_recv);
+                }
             }
         }
 

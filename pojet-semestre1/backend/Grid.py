@@ -17,6 +17,8 @@ class Grid:
         if Settings.enableSpitting:
             self.sausageCount = sausageCount
         self.dayCount = 0
+        self.npropertyDict = {} #{id : Bob or food} if id in npropertyDict, then player has network property 
+         
 
     # Check that the grid is made of cells and that the values are Bob or Food objects
     def verifyGrid(self):
@@ -131,7 +133,7 @@ class Grid:
 
 
     # Place a bob at the position (x,y) in the grid
-    def addBob(self, b = Bob()):
+    def addBob(self, b = None):
         """
         This method places a Bob object at it's currrent position in the grid. 
         If the cell at that position does not yet exist, it is created. 
@@ -140,7 +142,10 @@ class Grid:
         Parameters:
         bob (Bob): The Bob object to be placed. Defaults to a new Bob object.
         """
-
+        if b is None:
+            b = Bob()
+            self.addEntityToNProperty(b)
+        
         # If the current cell does not exist, create a new cell at coordinates (x, y)
         if not self.getCellAt(b.currentX, b.currentY):
             self.gridDict[(b.currentX, b.currentY)] = Cell(b.currentX, b.currentY)
@@ -161,6 +166,8 @@ class Grid:
         x (int): The x coordinate of the position to remove Bob from.
         y (int): The y coordinate of the position to remove Bob from.
         """
+        if self.checkEntityInNProperty(bobID):
+            self.delEntityFromNProperty(bobID)
         # If the bob is not at the specified position, do nothing
         cell = self.getCellAt(x, y)
         if not cell:
@@ -216,7 +223,7 @@ class Grid:
         self.addBob(b)
 
     # Add food at the position (x,y) in the grid
-    def addEdible(self, edible):
+    def addEdible(self, edible, np = None):
         """
         This method adds an Edible object to the grid.
         If the cell at that position does not yet exist, it is created.
@@ -224,6 +231,8 @@ class Grid:
         Parameters:
         food (Food): The Food object to be added.
         """
+        if np is None:
+            self.addEntityToNProperty(edible)
         # If the current cell does not exist, create a new one
         if not self.getCellAt(edible.x, edible.y):
             self.gridDict[(edible.x, edible.y)] = Cell(edible.x, edible.y)
@@ -240,11 +249,14 @@ class Grid:
         x (int): The x coordinate of the position to remove Food from.
         y (int): The y coordinate of the position to remove Food from.
         """
+        
         # If the cell at the specified position does not exist, do nothing
         cell = self.getCellAt(x, y)
         if not cell:
             return
         
+        if self.checkEntityInNProperty(cell.edibleObject.id): 
+            self.delEntityFromNProperty(cell.edibleObject.id)
         # Remove the food from the cell
         cell.edibleObject = None
 
@@ -549,7 +561,7 @@ class Grid:
         """
         # Get a list of all bobs in the grid
         bobsList = self.getAllBobs()
-        bobsList = [b for b in bobsList if b.JobProperty == Network.uuid_player]
+        bobsList = [b for b in self.getAllBobs() if b.id in self.npropertyDict.keys()]
    
         for b in bobsList:
             # Set the bob's action to idle if it is not dying
@@ -731,3 +743,109 @@ class Grid:
                 bestBob = bob
         return bestBob
     
+    def updateBob(self, message):
+        """
+        This method updates a Bob object based on a message received from the network.
+        It retrieves the Bob object from the grid based on the message's ID.
+        If the Bob object is found, it updates the Bob object based on the message's data.
+
+        Parameters:
+        message (list): A list containing the message data.
+        """
+        # Retrieve the Bob object from the grid based on the message
+        bob = None
+        bobs = self.getBobsAt(message[1], message[2])
+    
+        for b in bobs:
+            if b.id == message[0]:
+                bob = b
+                break
+        if bob is None:
+            return None
+        
+        # Bob moved
+        if message[3] is not None:    
+            # Move the bob
+            self.moveBobTo(bob, message[3], message[4])
+
+        # Bob ate another bob or food
+        else:
+            # Update its energy
+            bob.energy = message[4]
+        
+        return 0
+    
+    def updateFood(self, message):
+        """
+        This method updates a Food object based on a message received from the network.
+        It retrieves the Food object from the grid based on the message's ID.
+        If the Food object is found, it updates the Food object based on the message's data.
+
+        Parameters:
+        message (list): A list containing the message data.
+        """
+        # Retrieve the Food object from the grid based on the message
+        food = self.getCellAt(message[1], message[2]).edibleObject
+        if food.id != message[0]:
+            return None
+        
+        # Update the food object
+        food.value = message[3]
+        return 0
+
+    def addBobFromMessage(self, message):
+        """
+        This method adds a Bob object to the grid based on a message received from the network.
+        It creates a new Bob object based on the message's data and adds it to the grid.
+
+        Parameters:
+        message (list): A list containing the message data.
+        """
+        # Create a new Bob object based on the message
+        newBob = Bob(message[0], message[1], message[2], message[3], message[4], message[5], message[6], message[7], message[8], message[9], message[10])
+        self.addBob(newBob)
+
+    def addFoodFromMessage(self, message):
+        """
+        This method adds a Food object to the grid based on a message received from the network.
+        It creates a new Food object based on the message's data and adds it to the grid.
+
+        Parameters:
+        message (list): A list containing the message data.
+        """
+        # Create a new Food object based on the message
+        newFood = Food(message[0], message[1], message[2], message[3], message[4], message[5])
+        self.addEdible(newFood, 1)
+
+    def addEntityToNProperty(self, entity):
+        self.npropertyDict[entity.id] = entity
+
+    def delEntityFromNProperty(self, ID):
+        del self.npropertyDict[ID]
+
+    def getEntityFromNProperty(self, ID):
+        return self.npropertyDict.get(ID)
+    
+    def checkEntityInNProperty(self, ID):
+        return ID in self.npropertyDict
+    
+    def getGameInfo(self):
+        mess = ""
+        #grid size
+        #les trucs dans les cell
+        mess += f"{self.size}$"
+        for entity in self.npropertyDict.values():
+            if type(entity) is Bob:
+                mess += f"bob-{entity.currentX}-{entity.currentY}-{entity.velocity}-{entity.mass}-{entity.energy}-{entity.perception}-{entity.memorySize}-{entity.maxAmmos}-{entity.id}-{entity.NetworkProperty}-{entity.JobProperty}$"
+            else:
+                mess += f"food-{entity.x}-{entity.y}-{entity.value}-{entity.id}-{entity.NetworkProperty}-{entity.JobProperty}$"
+        return mess
+    
+    def findEntityById(self, ID):
+        for cell in self.gridDict.values():
+            if cell.edibleObject and cell.edibleObject.id == ID:
+                return cell.edibleObject
+            for bob in cell.bobs:
+                if bob.id == ID:
+                    return bob
+        return None

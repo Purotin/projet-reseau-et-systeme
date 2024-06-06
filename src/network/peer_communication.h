@@ -17,24 +17,34 @@
 void open_pipes(char *py_to_c_name, char *c_to_py_name, int *py_to_c_fd, int *c_to_py_fd);
 
 /**
- * Crée un socket pour agir en tant que serveur.
+ * Crée un socket pour agir en tant que serveur multicast.
+ * @param multicast_ip L'adresse IP multicast du groupe.
  * @param port Le port sur lequel le serveur doit écouter.
  * @return Le descripteur de fichier du socket serveur.
  */
-int create_server_socket(char *port);
+int create_server_socket(char *multicast_ip, char *port);
 
 /**
- * Crée un socket pour agir en tant que client.
- * @param ip L'adresse IP du pair à connecter.
+ * Crée un socket pour agir en tant que client multicast.
+ * @param multicast_ip L'adresse IP multicast du groupe.
  * @param port Le port du pair à connecter.
+ * @param peer_addr L'adresse du pair.
+ * @param peer_addr_len La longueur de l'adresse du pair.
  * @return Le descripteur de fichier du socket client.
  */
-int create_client_socket(char *ip, char *port, struct sockaddr_in *peer_addr, socklen_t *peer_addr_len);
+int create_client_socket(char *multicast_ip, char *port, struct sockaddr_in *peer_addr, socklen_t *peer_addr_len);
 
 /**
- * Lit les messages d'un socket serveur et les écrit dans le pipe de C vers Python.
- * @param server_sockfd Le descripteur de fichier du socket serveur.
+ * Gère la communication entre les pipes et les sockets.
+ * @param py_to_c Le descripteur de fichier du pipe de Python vers C.
+ * @param c_to_py Le descripteur de fichier du pipe de C vers Python.
+ * @param client_sockfd Le descripteur de fichier du socket client.
+ * @param peer_addr L'adresse du pair.
+ * @param peer_addr_len La longueur de l'adresse du pair.
+ * @param sockfd Le descripteur de fichier du socket serveur.
+ * @param UUID_Player L'identifiant unique du joueur.
  */
-void handle_communication(int py_to_c, int c_to_py, int client_sockfd, struct sockaddr_in *peer_addr, socklen_t peer_addr_len, int sockfd);
+void handle_communication(int py_to_c, int c_to_py, int client_sockfd, struct sockaddr_in *peer_addr, socklen_t peer_addr_len, int sockfd, char *UUID_Player);
+
 
 #endif // PEER_COMMUNICATION_H
