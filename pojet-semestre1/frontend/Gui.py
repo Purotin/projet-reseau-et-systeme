@@ -66,7 +66,7 @@ class Gui:
         self.guiSurface.blit(text, (10 + bobImg.get_width() + 10, 10 + bobImg.get_height() / 2 - text.get_height() / 2))
 
         # draw uuid of the player
-        text = font.render(f"Player uuid: {self.game.network.uuid_player}", True, (255,255,255))
+        text = font.render(f"Player uuid: {Network.uuid_player}", True, (255,255,255))
         self.guiSurface.blit(text, (10, 10 + bobImg.get_height() + 10))
 
 
@@ -198,17 +198,17 @@ class Gui:
             text = font.render(f"{objs.id}", True, (255,255,255))
             tooltip.blit(text, (10, 30))
 
-            # #network properties
-            # text = font.render(f"Food network properties:", True, (255,255,255))
-            # tooltip.blit(text, (10, 50))
-            # text = font.render(f"{objs.network_properties}", True, (255,255,255))
-            # tooltip.blit(text, (10, 70))
+            #network properties
+            text = font.render(f"Food network properties:", True, (255,255,255))
+            tooltip.blit(text, (10, 50))
+            text = font.render(f"{objs.networkProperty}", True, (255,255,255))
+            tooltip.blit(text, (10, 70))
 
-            # #job properties
-            # text = font.render(f"Food job properties:", True, (255,255,255))
-            # tooltip.blit(text, (10, 90))
-            # text = font.render(f"{objs.job_properties}", True, (255,255,255))
-            # tooltip.blit(text, (10, 110))
+            #job properties
+            text = font.render(f"Food job properties:", True, (255,255,255))
+            tooltip.blit(text, (10, 90))
+            text = font.render(f"{objs.jobProperty}", True, (255,255,255))
+            tooltip.blit(text, (10, 110))
             
         else:
             tooltipWidth = 300
@@ -242,17 +242,17 @@ class Gui:
             text = font.render(f"{objs.id}", True, (255,255,255))
             tooltip.blit(text, (10, 130))
 
-            # #bob network properties
-            # text = font.render(f"Bob network properties uuid:", True, (255,255,255))
-            # tooltip.blit(text, (10, 150))
-            # text = font.render(f"{objs.network_properties}", True, (255,255,255))
-            # tooltip.blit(text, (10, 170))
+            #bob network properties
+            text = font.render(f"Bob network properties uuid:", True, (255,255,255))
+            tooltip.blit(text, (10, 150))
+            text = font.render(f"{objs.networkProperty}", True, (255,255,255))
+            tooltip.blit(text, (10, 170))
 
-            # #bob job properties
-            # text = font.render(f"Bob job properties uuid:", True, (255,255,255))
-            # tooltip.blit(text, (10, 190))
-            # text = font.render(f"{objs.job_properties}", True, (255,255,255))
-            # tooltip.blit(text, (10, 210))
+            #bob job properties
+            text = font.render(f"Bob job properties uuid:", True, (255,255,255))
+            tooltip.blit(text, (10, 190))
+            text = font.render(f"{objs.jobProperty}", True, (255,255,255))
+            tooltip.blit(text, (10, 210))
 
             # draw the outline of the vision area
 

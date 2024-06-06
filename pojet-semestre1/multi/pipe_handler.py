@@ -29,15 +29,6 @@ class PipeHandler:
         if self.pipe_c_to_py and self.pipe_c_to_py in select.select([self.pipe_c_to_py], [], [], 0)[0]:
             return self.pipe_c_to_py.readline().strip()
         return ""
-        # msg = ""
-        # while(True):
-        #     readables, _, _ = select.select([self.pipe_c_to_py], [], [], 0)
-        #     if self.pipe_c_to_py in readables:
-        #         msg += self.pipe_c_to_py.readline().strip()
-        #     else:
-        #         break
-        # return msg
-            
         
     def close(self):
         if self.pipe_py_to_c:

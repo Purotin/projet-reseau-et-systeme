@@ -69,11 +69,11 @@ class Game:
             
             self.gridDict = self.grid.gridDict
 
+
         elif type(grid) == str:
             self.loadSaveFile(grid)
 
-        self.network = Network() if network is None else network
-        self.network.grid = self.grid
+        Network.grid = self.grid
         
     # main loop
     def run(self):
@@ -105,7 +105,7 @@ class Game:
 
 
             #Network.processBuffer()
-            self.network.processBuffer()
+            Network.processBuffer()
 
 
             # handle events

@@ -4,43 +4,33 @@ from backend.Grid import Grid
 from backend.Bob import Bob
 from backend.Edible import *
 from multi.network import Network
-from time import sleep
+import time
 
 if __name__ == "__main__":
-
-    net = Network()
     
-    net.requestConnection("239.0.0.1", "1234")
-    sleep(2)
-    buffer = ""
-    for i in range(10000):
-        buffer += net.pipes.recv()
-        print(buffer)
+    Network.requestConnection("239.0.0.1", "1234")
+    
     first_connection = True
-    final_message = ""
-    start_index = None
-    for i in range(len(buffer)):
-    # Si le buffer contient un début de message
-        if buffer[i] == "{":
-            start_index = i
-        elif buffer[i] == "}":
-            if start_index is not None:
-                message = buffer[start_index+1:i].split(";")
-                start_index = None
-                if message[0] == "ConnectionResponse":
-                    first_connection = False
-                    final_message = message
-                    break
+    
+    start_time = time.time()
+    timoutB = True
+    while timoutB:
+        message = Network.waitResponseConnection()
+        if message != None:
+            timoutB = False
+            first_connection = False
+        if time.time() - start_time > 5:
+            timoutB = False
     
     if not first_connection:
         print("ConnectionResponse received a game is already running, you are connected to it")
-        #-------A COMPLETER-------#
-        
+        print(Network.processConnectionResponse(message))
+
     else:
         print("you are the first player, creating a new game")
         grid = Grid(20, 0, 0)
 
-        game = Game(grid, screenWidth=1080, screenHeight=750, dayLimit=0, noInterface=False, network=net)
+        game = Game(grid, screenWidth=1080, screenHeight=750, dayLimit=0, noInterface=False)
 
         print("Shortcuts: \n")
         print("Press 'escape' to display the pause menu")
@@ -57,6 +47,6 @@ if __name__ == "__main__":
 
         game.run()
         
-    net.disconnect()
+    Network.disconnect()
         
     
