@@ -100,18 +100,18 @@ void handle_communication(int py_to_c, int c_to_py, int client_sockfd, struct so
     sendto(client_sockfd, &random_number_str, sizeof(random_number_str), 0, (struct sockaddr *)peer_addr, peer_addr_len);
 
     // Attendre que nous recevions notre propre adresse IP
-    // while (1) {
-    //     int num_bytes_recv = recvfrom(sockfd, message, MAX_LENGTH, 0, (struct sockaddr *)&peer_addr_recv, &peer_addr_len_recv);
-    //     if (num_bytes_recv > 0) {
-    //         message[num_bytes_recv] = '\0';  // Assurez-vous que le message est terminé
-    //         if (strcmp(message, random_number_str) == 0) {
-    //             inet_ntop(AF_INET, &(peer_addr_recv.sin_addr), my_ip, INET_ADDRSTRLEN);
-    //             memset(message, '\0', MAX_LENGTH);
-    //             break;
-    //         }
+    while (1) {
+        int num_bytes_recv = recvfrom(sockfd, message, MAX_LENGTH, 0, (struct sockaddr *)&peer_addr_recv, &peer_addr_len_recv);
+        if (num_bytes_recv > 0) {
+            message[num_bytes_recv] = '\0';  // Assurez-vous que le message est terminé
+            if (strcmp(message, random_number_str) == 0) {
+                inet_ntop(AF_INET, &(peer_addr_recv.sin_addr), my_ip, INET_ADDRSTRLEN);
+                memset(message, '\0', MAX_LENGTH);
+                break;
+            }
             
-    //     }
-    // }
+        }
+    }
 
     while (1) {
         FD_ZERO(&readfds);

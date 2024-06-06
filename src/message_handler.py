@@ -22,14 +22,15 @@ def main():
         # Utiliser select pour vérifier si nous pouvons lire du c_to_py ou écrire dans py_to_c
         readables, writables, _ = select.select([c_to_py, sys.stdin], [py_to_c], [])
 
-        # Si nous pouvons lire du c_to_py, afficher le message
+        # vider le buffer de c_to_py
         if c_to_py in readables:
-            message = c_to_py.readline().strip()
-            if message:
-                print("Message reçu: ", message)
+            data = c_to_py.readline().strip()
+            print(data)  # Afficher le message dans la console
+
+      
 
         # Si nous pouvons écrire dans py_to_c, demander à l'utilisateur d'entrer un message
-        if py_to_c in writables:
+        elif py_to_c in writables:
             message = input("Entrez un message: ")
             # Si l'utilisateur entre "exit", fermer les pipes et terminer le programme
             if message == "exit":
