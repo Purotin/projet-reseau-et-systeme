@@ -1,6 +1,5 @@
 import os
 import select
-import errno
 class PipeHandler:
     def __init__(self):
         # Création des pipes si nécessaire
@@ -14,7 +13,6 @@ class PipeHandler:
         except OSError as e:
             print("Erreur lors de l'ouverture du pipe py_to_c: ", e)
 
-            
         try:
             self.pipe_c_to_py = open("c_to_py", 'r')
         except OSError as e:

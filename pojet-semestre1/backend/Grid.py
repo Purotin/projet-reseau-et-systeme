@@ -625,7 +625,9 @@ class Grid:
         
         # Iterate over the grid dictionary
         for key, cell in self.gridDict.items():
-            cell.edibleObject = None
+            if (cell.edibleObject):
+                if cell.edibleObject.jobProperty == Network.uuid_player:
+                    cell.edibleObject = None
             # If the cell is empty, add its key to the list
             if cell.isEmpty():
                 keysToRemove.append(key)

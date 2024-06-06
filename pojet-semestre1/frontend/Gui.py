@@ -171,7 +171,7 @@ class Gui:
                 if xTile < 0 or xTile > self.map.width or yTile < 0 or yTile > self.map.height:
                     continue
                 
-                height = self.map.getHeightAt(bob.currentX, bob.currentY) * ((tileTotalHeightOriginal * self.map.scaleMultiplier) / 2 - 2) # 2 = height of the "hole" in the tile
+                height = self.map.getHeightAt(edible.x, edible.y) * ((tileTotalHeightOriginal * self.map.scaleMultiplier) / 2 - 2) # 2 = height of the "hole" in the tile
 
                 xScreen = (self.map.terrainSurface.get_width() - self.map.width*self.map.scaleMultiplier*tileTotalWidthOriginal)/2 + self.map.terrainSurface.get_width() / 2 + (animatedXTile-2) * (tileTotalWidthOriginal * self.map.scaleMultiplier) / 2 -  + animatedYTile * (tileTotalWidthOriginal * self.map.scaleMultiplier) / 2
                 yScreen = animatedYTile * (tileVisibleHeightOriginal * self.map.scaleMultiplier) / 2 + animatedXTile * (tileVisibleHeightOriginal * self.map.scaleMultiplier) / 2 - height

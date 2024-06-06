@@ -14,8 +14,8 @@ class Edible:
         self.jobProperty = Jproperty if not Jproperty is None else Network.uuid_player
 
 class Food(Edible):
-    def __init__(self, x, y, energy=Settings.spawnedFoodEnergy):
-        super().__init__(x, y, energy)
+    def __init__(self, x, y, energy=Settings.spawnedFoodEnergy, ID = None, Nproperty = None, Jproperty = None):
+        super().__init__(x, y, energy, ID, Nproperty, Jproperty)
 
 class EffectFood(Food):
     def __init__(self, x, y, energy=Settings.spawnedFoodEnergy, effect=None):
