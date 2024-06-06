@@ -33,6 +33,7 @@ class Network:
                     message = buffer[start_index+1:i]
                     start_index = None
                     #Network.processMessage(message)
+                    print(message)
                     self.processMessage(message)
 
     def processMessage(self, message):
@@ -81,8 +82,10 @@ class Network:
         # À COMPLÉTER
         # Envoyer tous les objets du jeu
         #Message = {ConnectionResponse; message[1]; info du jeu dont j'ai la np}
+        
         game_info = self.grid.getGameInfo()
-        reponse = "{ConnectionResponse;"+message[1]+";"+game_info+"}"
+        reponse = "{ConnectionResponse;"+message[1]+";"+self.uuid_player+";"+game_info+"}"
+        print(reponse)
         self.pipes.send(reponse)
 
     def processConnectionResponse(self, message):

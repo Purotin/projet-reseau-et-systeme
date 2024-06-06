@@ -11,8 +11,11 @@ if __name__ == "__main__":
     net = Network()
     
     net.requestConnection("239.0.0.1", "1234")
-    sleep(1) 
-    buffer = net.pipes.recv()
+    sleep(2)
+    buffer = ""
+    for i in range(10000):
+        buffer += net.pipes.recv()
+        print(buffer)
     first_connection = True
     final_message = ""
     start_index = None
@@ -54,6 +57,6 @@ if __name__ == "__main__":
 
         game.run()
         
-        net.disconnect()
+    net.disconnect()
         
     
