@@ -22,12 +22,13 @@ def main():
         # Utiliser select pour vérifier si nous pouvons lire du c_to_py ou écrire dans py_to_c
         readables, writables, _ = select.select([c_to_py, sys.stdin], [py_to_c], [])
 
-        # Si nous pouvons lire du c_to_py, afficher le message
-        if c_to_py in readables:
-            message = c_to_py.readline().strip()
-            if message:
-                print("Message reçu: ", message)
-
+        # vider le buffer de c_to_py
+        msg = ""
+        while c_to_py in readables:
+            msg += c_to_py.readline().strip()
+            readables, _, _ = select.select([c_to_py], [], [], 0)
+            
+        print(msg)
         # Si nous pouvons écrire dans py_to_c, demander à l'utilisateur d'entrer un message
         if py_to_c in writables:
             message = input("Entrez un message: ")
