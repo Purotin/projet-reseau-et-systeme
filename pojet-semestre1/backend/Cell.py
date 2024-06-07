@@ -2,6 +2,7 @@ from backend.Settings import Settings
 from backend.Edible import *
 from backend.Bob import *
 from backend.Effect import *
+from backend.Grid import *
 from random import *
 # from multi.network import Network
 import uuid
@@ -112,6 +113,9 @@ class Cell:
             # Set the action of the Bob object to "eat"
             b.action = "eat"
 
+        food_changes = Grid.makeMessage(edibleObject)
+        Network.sendMessage(food_changes)
+
     # Make all bobs in the cell eat food or a prey if they are able to
     def feedCellBobs(self):
         """
@@ -141,6 +145,15 @@ class Cell:
 
                         # If the mass ratio is less than the threshold
                         if massRatio < Settings.massRatioThreshold:
+                            # Request otherBob network property
+                            if otherBob.networkProperty != Network.uuid_player:
+                                Network.requestNetworkProperty(otherBob.id)
+
+                                Network.timeout(5, Network.recvNetworkProperty, otherBob.id)
+
+                            if otherBob.networkProperty == Network.uuid_player:
+                                continue
+ 
                             # The Bob consumes the energy of the other Bob object
                             bob.energy = min(bob.energyMax, otherBobEnergy * .5 * (1 - massRatio))
                             # The other Bob's energy is reduced
@@ -191,12 +204,34 @@ class Cell:
             b1 (Bob): The first Bob.
             b2 (Bob): The second Bob.
         """
+
+        # Si l'autre bob appartient à un autre joueur
+        if b2.networkProperty != Network.uuid_player:
+            # On demande sa propriété réseau
+            Network.requestNetworkProperty(b2.id)
+            Network.recvNetworkProperty()
+
+            # On demande ses statistiques
+            Network.sendMateRequest(b2)
+
+            # On met à jour ses statistiques
+            b2_attributes = Network.recvMateResponse(b2.id)
+            b2.energy = b2_attributes[3]
+            b2.velocity = b2_attributes[4]
+            b2.velocityBuffer = b2.attributes[5]
+            b2.mass = b2_attributes[6]
+            b2.perception = b2_attributes[7]
+            b2.memorySize = b2_attributes[8]
+
         # Create a new bob
         bornBob = Bob.createBiParentalChild(b1, b2)
 
         # Add the new bob to the cell
         self.addBob(bornBob)
         
+        newBorn_info = Grid.makeMessage(bornBob)
+        Network.sendMessage(newBorn_info)
+
         # Set the action of the two parents to "mate"
         b1.action = "love"
         b2.action = "love"
@@ -229,10 +264,11 @@ class Cell:
                 elif Settings.enableSexualReproduction and bob.energy >= Settings.matingEnergyRequirement:
                     # Get the list of Bob objects in the cell
                     otherBobs = [otherBob for otherBob in self.bobs if otherBob != bob]
-                    # If there is another Bob object in the cell
-                    if otherBobs:
+
+                    for _ in range(len(otherBobs)):
                         # Select a random Bob object from the list of Bob objects in the cell
                         otherBob = choice(otherBobs)
+
                         # If the other Bob object has enough energy to reproduce by parthenogenesis
                         if otherBob.energy >= Settings.matingEnergyRequirement:
                             # The two Bobs mate

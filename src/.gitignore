@@ -4,3 +4,7 @@
 
 # Ignorer le dossier .vscode
 .vscode/*
+
+# Ignorer tous les pycache
+../pojet-semestre1/backend/__pycache__/*
+../pojet-semestre1/multi/__pycache__/*

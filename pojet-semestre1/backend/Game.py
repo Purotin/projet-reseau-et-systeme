@@ -6,10 +6,13 @@ from random import randint
 import pickle
 from datetime import datetime
 from os import path, makedirs
+import time
 
 from backend.Grid import *
 from backend.Settings import Settings
 from multi.network import Network
+from backend.Bob import Bob
+from backend.Edible import Edible
 
 from frontend.Map import Map
 from frontend.Gui import Gui
@@ -17,7 +20,7 @@ from frontend.DisplayStatsChart import DisplayStatsChart
 
 class Game:
 
-    def __init__(self, grid, screenWidth=930, screenHeight=640, dayLimit = 0, noInterface=False, network=None):
+    def __init__(self, grid_size, screenWidth=930, screenHeight=640, dayLimit = 0, noInterface=False, network=None):
         
         pygame.init()
 
@@ -54,6 +57,42 @@ class Game:
         self.editorMode = False
         self.editorModeType = "bob" # "bob" or "food"
         self.editorModeCoords = None
+        
+        # ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️ CONNEXION AU RÉSEAU ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️
+
+        # Envoi de la requête de connexion à la partie en cours sur le réseau
+        Network.requestConnection("239.0.0.1", "1234")
+    
+        first_connection = True
+
+        # Attente de la réponse de connexion
+        message = Network.timeout(5,Network.recvConnectionResponse)
+        if message is not None:
+            first_connection = False
+
+        
+        # Si la réponse de connexion est reçue
+        if not first_connection:
+            print("ConnectionResponse received a game is already running, you are connected to it")
+            self.networkArgs = Network.processConnectionResponse(message)
+
+            # Création de la grille à partir des données reçues
+            grid = Grid(self.networkArgs["gridSize"], 0, 0)
+            for bob in self.networkArgs["bobs"]:
+                grid.addBob(Bob(x=bob["x"], y=bob["y"], ID=bob["id"], mass=bob["mass"], energy=bob["energy"], Nproperty=bob["networkProperty"], Jproperty=bob["jobProperty"]))
+        
+            for food in self.networkArgs["foods"]:
+                grid.addEdible(Food(x=food["x"], y=food["y"], ID=food["id"], energy=food["energy"], Nproperty=food["networkProperty"], Jproperty=food["jobProperty"]))
+            
+        # Si la réponse de connexion n'est pas reçue
+        else:
+            print("you are the first player, creating a new game")
+            self.networkArgs = None
+
+            # Création de la grille à partir de la taille donnée en argument du constructeur
+            grid = Grid(grid_size, 10, 0)
+
+        # ⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️ FIN DE LA CONNEXION AU RÉSEAU ⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️
 
         # Grid related variables
         if type(grid) == Grid:
@@ -69,11 +108,11 @@ class Game:
             
             self.gridDict = self.grid.gridDict
 
+
         elif type(grid) == str:
             self.loadSaveFile(grid)
 
-        self.network = Network() if network is None else network
-        self.network.grid = self.grid
+        Network.grid = self.grid
         
     # main loop
     def run(self):
@@ -96,6 +135,7 @@ class Game:
             # Populate the grid with random bobs and Food
             self.grid.spawnBobs()
             self.grid.spawnFood()
+                                    
         if Settings.enableSpitting:
             self.grid.spawnSausages()
 
@@ -104,8 +144,7 @@ class Game:
             # GESTION DES DONNÉES RÉSEAU REÇUES
 
 
-            #Network.processBuffer()
-            self.network.processBuffer()
+            Network.processMessages()
 
 
             # handle events
