@@ -594,6 +594,10 @@ class Grid:
             if Settings.enableMovement and b.action == "idle":
                 self.moveBob(b)
 
+            bob_changes = self.makeMessage(b)
+            Network.sendMessage(bob_changes)
+
+
         # Delete all dead Bob objects in the grid
         self.cleanDeadBobs()
         
@@ -803,7 +807,7 @@ class Grid:
         message (list): A list containing the message data.
         """
         # Create a new Bob object based on the message
-        newBob = Bob(message[0], message[1], message[2], message[3], message[4], message[5], message[6], message[7], message[8], message[9], message[10])
+        newBob = Bob(id=message[0],x = message[1], y = message[2], mass = message[3], energy = message[4], Nproperty = message[5], Jproperty = message[6])
         self.addBob(newBob)
 
     def addFoodFromMessage(self, message):
@@ -836,7 +840,8 @@ class Grid:
                     return bob
         return None
     
-    def makeMessage(self, entity):
+    @staticmethod
+    def makeMessage(entity):
         message = ""
         if type(entity) == Bob:
             match entity.action:
@@ -844,7 +849,9 @@ class Grid:
                     message = f"bob;{entity.id};{entity.lastX};{entity.lastY};{entity.current_X};{entity.current_Y};None;" 
                 case "eat" | "eaten" | "parthenogenesis" | "love":
                     message = f"bob;{entity.id};{entity.current_X};{entity.current_Y};None;{entity.energy};"
-                case "idle":
-                    pass
+                case "birth":
+                    message = f"newbob;{entity.id};{entity.currentX};{entity.currentY};{entity.mass};{entity.energy};{entity.networkProperty};{entity.jobProperty}"
         elif type(entity) == Food:
             message = f"food;{entity.id};{entity.x};{entity.y};{entity.value};"
+        
+        return message

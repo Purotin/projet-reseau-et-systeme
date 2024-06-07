@@ -58,16 +58,16 @@ class Network:
                 Network.processNetworkPropertyResponse(message)
 
             case "Bob":
-                Network.processBob(message)
+                Network.grid.updateBob(message[1:])
 
             case "Food":
-                Network.processFood(message)
+                Network.grid.updateFood(message[1:])
 
             case "NewBob":
-                Network.processNewBob(message)
+                Network.grid.addBobFromMessage(message[1:])
 
             case "NewFood":
-                Network.processNewFood(message)
+                Network.grid.addFoodFromMessage(message[1:])
 
     # FONCTION OK
     def requestConnection(IP, port):
@@ -151,15 +151,6 @@ class Network:
         message = "{NetworkPropertyRequest;"+Network.uuid_player + ";" + entityId + "}"
         Network.pipes.send(message)
 
-
-    def processNetworkPropertyResponse(message):
-        # À COMPLÉTER
-        # Mettre à jour la propriété réseau de l'objet
-        if message[1] == Network.uuid_player:
-            return
-        entity = Network.grid.findEntityById(message[2])
-        entity.networkProperty = Network.uuid_player
-        
     def processNetworkPropertyRequest(message):
         # Do I have the Nproperty ?
              # If yes, give it
@@ -171,23 +162,7 @@ class Network:
             response = "{NetworkPropertyResponse;"+ message[1] + ";" + message[2] + "}"
             Network.pipes.send(response)
             entity.networkProperty = message[1]
-            
-    def processBob(message):
-        if Network.grid.updateBob(message[1:]) is None:
-            #Le bob n'a pas été trouvé, on fait quoi ?
-            pass
 
-    def processFood(message):
-        if Network.grid.updateFood(message[1:]) is None:
-            #La nourriture n'a pas été trouvée, on fait quoi ?
-            pass
-
-    def processNewBob(message):
-        Network.grid.addBobFromMessage(message[1:])
-        
-    def processNewFood(message):
-        Network.grid.addFoodFromMessage(message[1:])
-    
     def sendMessage(message):
         mess = "{"+message+"}"
         Network.pipes.send(mess)
@@ -220,7 +195,7 @@ class Network:
 # bob mange bob ou food     : {bob;id;positionX;positionY;None;energy}
 # nourriture eaten          : {food;id;positionX;positionY;NewValue}
 
-# Création de bob           : {newbob;positionX;positionY;totalVelocity;mass;energy;perception;memorySize;maxAmmos;ID;Nproperty;Jproperty}
+# Création de bob           : {newbob;ID;positionX;positionY;mass;energy;Nproperty;Jproperty}
 # Création de nourriture    : {newfood;positionX;positionY;value;ID;Nproperty;Jproperty}
 # Réponse prop réseau       : {NetworkProperty;player_id;obj_id;networkProperty}
 # Requête de connexion      : {ConnectionRequest}

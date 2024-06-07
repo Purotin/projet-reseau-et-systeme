@@ -2,6 +2,7 @@ from backend.Settings import Settings
 from backend.Edible import *
 from backend.Bob import *
 from backend.Effect import *
+from backend.Grid import *
 from random import *
 from multi.network import Network
 import uuid
@@ -112,6 +113,9 @@ class Cell:
             # Set the action of the Bob object to "eat"
             b.action = "eat"
 
+        food_changes = Grid.makeMessage(edibleObject)
+        Network.sendMessage(food_changes)
+
     # Make all bobs in the cell eat food or a prey if they are able to
     def feedCellBobs(self):
         """
@@ -205,6 +209,9 @@ class Cell:
         # Add the new bob to the cell
         self.addBob(bornBob)
         
+        newBorn_info = Grid.makeMessage(bornBob)
+        Network.sendMessage(newBorn_info)
+
         # Set the action of the two parents to "mate"
         b1.action = "love"
         b2.action = "love"
@@ -239,7 +246,7 @@ class Cell:
                     otherBobs = [otherBob for otherBob in self.bobs if otherBob != bob]
                     # If there is another Bob object in the cell
                     if otherBobs:
-                        for _ in len(otherBobs):
+                        for _ in range(len(otherBobs)):
                             # Select a random Bob object from the list of Bob objects in the cell
                             otherBob = choice(otherBobs)
                             # Request otherBob network property
