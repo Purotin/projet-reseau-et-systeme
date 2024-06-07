@@ -1,6 +1,6 @@
 from backend.Settings import Settings
 from backend.Effect import *
-from multi.network import Network
+# from multi.network import Network
 import uuid
 
 
@@ -9,13 +9,13 @@ class Edible:
         self.x = x
         self.y = y
         self.value = value
-        self.networkProperty = Nproperty if not Nproperty is None else Network.uuid_player
+        # self.NetworkProperty = Nproperty if not Nproperty is None else Network.uuid_player
         self.id = ID if not ID is None else uuid.uuid4()
-        self.jobProperty = Jproperty if not Jproperty is None else Network.uuid_player
+        # self.JobProperty = Jproperty if not Jproperty is None else Network.uuid_player
 
 class Food(Edible):
-    def __init__(self, x, y, energy=Settings.spawnedFoodEnergy, ID = None, Nproperty = None, Jproperty = None):
-        super().__init__(x, y, energy, ID, Nproperty, Jproperty)
+    def __init__(self, x, y, energy=Settings.spawnedFoodEnergy):
+        super().__init__(x, y, energy)
 
 class EffectFood(Food):
     def __init__(self, x, y, energy=Settings.spawnedFoodEnergy, effect=None):

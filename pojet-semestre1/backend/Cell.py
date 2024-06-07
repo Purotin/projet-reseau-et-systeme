@@ -3,7 +3,7 @@ from backend.Edible import *
 from backend.Bob import *
 from backend.Effect import *
 from random import *
-from multi.network import Network
+# from multi.network import Network
 import uuid
 
 class Cell:
@@ -12,7 +12,7 @@ class Cell:
         self.edibleObject = None
 
         self.id = uuid.uuid4()
-        self.networkProperty = Network.uuid_player
+        # self.NetworkProperty = Network.uuid_player
 
     # Compare two cells
     def __eq__(self, other):
@@ -127,7 +127,7 @@ class Cell:
         shuffle(self.bobs)
 
         # Make each bob that has not performed any action yet eat
-        for bob in [b for b in self.bobs if b.jobProperty == Network.uuid_player]:
+        for bob in self.bobs:
             if bob.action == "idle":
                 
                 # Get the list all other Bobs in the cell 
@@ -220,7 +220,7 @@ class Cell:
         if not(Settings.enableParthenogenesis or Settings.enableSexualReproduction):
             return
         
-        for bob in [b for b in self.bobs if b.jobProperty == Network.uuid_player]:
+        for bob in [b for b in self.bobs]:
             # If the Bob has not performed any action yet
             if bob.action == "idle":
                 # Make the Bob reproduce by parthenogenesis if it has enough energy

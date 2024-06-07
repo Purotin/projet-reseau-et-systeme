@@ -1,18 +1,20 @@
 import os
 import select
+import errno
 class PipeHandler:
     def __init__(self):
         # Création des pipes si nécessaire
         if not os.path.exists("py_to_c"):
-            os.mkfifo("py_to_c")
+            os.mkfifo("py_to_c", "w")
         if not os.path.exists("c_to_py"):
-            os.mkfifo("c_to_py")
+            os.mkfifo("c_to_py", "r")
 
         try:
             self.pipe_py_to_c = open("py_to_c", 'w')
         except OSError as e:
             print("Erreur lors de l'ouverture du pipe py_to_c: ", e)
 
+            
         try:
             self.pipe_c_to_py = open("c_to_py", 'r')
         except OSError as e:
@@ -24,9 +26,16 @@ class PipeHandler:
             self.pipe_py_to_c.flush()
 
     def recv(self):
-        if self.pipe_c_to_py and self.pipe_c_to_py in select.select([self.pipe_c_to_py], [], [], 0)[0]:
-            return self.pipe_c_to_py.readline().strip()
-        return ""
+        # if self.pipe_c_to_py and self.pipe_c_to_py in select.select([self.pipe_c_to_py], [], [], 0)[0]:
+        #     return self.pipe_c_to_py.readline().strip()
+        # return ""
+        readables, writables, _ = select.select([self.pipe_c_to_py], [], [], 0)
+        message = ""
+        while self.pipe_c_to_py in readables:
+            message += self.pipe_c_to_py.readline().strip()
+            readables, _, _ = select.select([self.pipe_c_to_py], [], [], 0)
+        return message
+            
         
     def close(self):
         if self.pipe_py_to_c:
