@@ -141,6 +141,14 @@ class Cell:
 
                         # If the mass ratio is less than the threshold
                         if massRatio < Settings.massRatioThreshold:
+                            # Request otherBob network property
+                            if otherBob.networkProperty != Network.uuid_player:
+                                Network.sendNetworkPropertyRequest(otherBob.id)
+                                Network.processBuffer()
+
+                            if otherBob.networkProperty == Network.uuid_player:
+                                continue
+ 
                             # The Bob consumes the energy of the other Bob object
                             bob.energy = min(bob.energyMax, otherBobEnergy * .5 * (1 - massRatio))
                             # The other Bob's energy is reduced
@@ -231,8 +239,17 @@ class Cell:
                     otherBobs = [otherBob for otherBob in self.bobs if otherBob != bob]
                     # If there is another Bob object in the cell
                     if otherBobs:
-                        # Select a random Bob object from the list of Bob objects in the cell
-                        otherBob = choice(otherBobs)
+                        for _ in len(otherBobs):
+                            # Select a random Bob object from the list of Bob objects in the cell
+                            otherBob = choice(otherBobs)
+                            # Request otherBob network property
+                            if otherBob.networkProperty != Network.uuid_player:
+                                Network.sendNetworkPropertyRequest(otherBob.id)
+                                Network.processBuffer()
+
+                            if otherBob.networkProperty == Network.uuid_player:
+                                break                       
+
                         # If the other Bob object has enough energy to reproduce by parthenogenesis
                         if otherBob.energy >= Settings.matingEnergyRequirement:
                             # The two Bobs mate

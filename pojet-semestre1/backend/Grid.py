@@ -143,14 +143,14 @@ class Grid:
         """
         if b is None:
             b = Bob()
-            self.addEntityToNProperty(b)
-        
+
         # If the current cell does not exist, create a new cell at coordinates (x, y)
         if not self.getCellAt(b.currentX, b.currentY):
             self.gridDict[(b.currentX, b.currentY)] = Cell(b.currentX, b.currentY)
         
         # Add Bob to the cell
         self.gridDict[(b.currentX, b.currentY)].addBob(b)
+
  
     # Remove a bob at the position (x,y) in the grid
     def removeBob(self, bobID, x, y):
@@ -610,6 +610,7 @@ class Grid:
                 b.action = "decay"
 
 
+
     # Day events
 
 
@@ -834,3 +835,16 @@ class Grid:
                 if bob.id == ID:
                     return bob
         return None
+    
+    def makeMessage(self, entity):
+        message = ""
+        if type(entity) == Bob:
+            match entity.action:
+                case "move":
+                    message = f"bob;{entity.id};{entity.lastX};{entity.lastY};{entity.current_X};{entity.current_Y};None;" 
+                case "eat" | "eaten" | "parthenogenesis" | "love":
+                    message = f"bob;{entity.id};{entity.current_X};{entity.current_Y};None;{entity.energy};"
+                case "idle":
+                    pass
+        elif type(entity) == Food:
+            message = f"food;{entity.id};{entity.x};{entity.y};{entity.value};"

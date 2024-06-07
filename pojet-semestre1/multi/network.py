@@ -151,23 +151,27 @@ class Network:
         message = "{NetworkPropertyRequest;"+Network.uuid_player + ";" + entityId + "}"
         Network.pipes.send(message)
 
+
     def processNetworkPropertyResponse(message):
         # À COMPLÉTER
         # Mettre à jour la propriété réseau de l'objet
         if message[1] == Network.uuid_player:
             return
         entity = Network.grid.findEntityById(message[2])
-        Network.grid.addEntityToNPorperty(entity)
-
+        entity.networkProperty = Network.uuid_player
+        
     def processNetworkPropertyRequest(message):
         # Do I have the Nproperty ?
              # If yes, give it
              # If not, don't answer
-        if Network.grid.checkEntityInNProperty(message[2]):
+        
+        entity = Network.grid.findEntityById(message[2])
+
+        if entity.networkProperty == Network.uuid_player:
             response = "{NetworkPropertyResponse;"+ message[1] + ";" + message[2] + "}"
             Network.pipes.send(response)
-            Network.grid.delEntityFromNProperty(message[2])
-
+            entity.networkProperty = message[1]
+            
     def processBob(message):
         if Network.grid.updateBob(message[1:]) is None:
             #Le bob n'a pas été trouvé, on fait quoi ?
