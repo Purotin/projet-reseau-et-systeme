@@ -294,7 +294,10 @@ class Game:
 
                     if event.buttons[0] == 1:
                         if self.editorModeType == "bob":
-                            self.grid.addBob(Bob(self.editorModeCoords[0], self.editorModeCoords[1]))
+                            bob = Bob(self.editorModeCoords[0], self.editorModeCoords[1])
+                            if bob.jobProperty != Network.uuid_player:
+                                Network.sendNewBob(bob)
+                            self.grid.addBob(bob)
                         elif self.editorModeType == "food":
                             self.grid.addEdible(Food(self.editorModeCoords[0], self.editorModeCoords[1]))
                     

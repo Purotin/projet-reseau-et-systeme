@@ -132,7 +132,7 @@ class Grid:
 
 
     # Place a bob at the position (x,y) in the grid
-    def addBob(self, b = Bob(), noMessage = False):
+    def addBob(self, b = Bob()):
         """
         This method places a Bob object at it's currrent position in the grid. 
         If the cell at that position does not yet exist, it is created. 
@@ -149,8 +149,6 @@ class Grid:
         
         # Add Bob to the cell
         self.gridDict[(b.currentX, b.currentY)].addBob(b)
-        if not noMessage:
-            Network.sendNewBob(b)
  
     # Remove a bob at the position (x,y) in the grid
     def removeBob(self, bobID, x, y):
@@ -237,8 +235,6 @@ class Grid:
         
         # Add the edible object to the cell
         self.gridDict[(edible.x, edible.y)].addEdible(edible)
-        if not noMessage:
-            Network.sendNewFood(edible)
     
     # Remove food at the position (x,y) in the grid
     def removeFoodAt(self,x,y):
@@ -596,9 +592,6 @@ class Grid:
             if Settings.enableMovement and b.action == "idle":
                 self.moveBob(b)
 
-            bob_changes = self.makeMessage(b)
-            Network.sendMessage(bob_changes)
-
 
         # Delete all dead Bob objects in the grid
         self.cleanDeadBobs()
@@ -661,7 +654,10 @@ class Grid:
         for _ in range(self.bobCount):
             x = randint(0, self.size - 1)
             y = randint(0, self.size - 1)
-            self.addBob(Bob(x, y))
+            bob = Bob(x, y)
+            if bob.jobProperty != Network.uuid_player:
+                Network.sendNewBob(bob)
+            self.addBob(bob)
 
     # Populates the grid with food at the start of a new day
     def spawnFood(self):
@@ -809,8 +805,8 @@ class Grid:
         message (list): A list containing the message data.
         """
         # Create a new Bob object based on the message
-        newBob = Bob(ID = uuid.UUID(message[0]),x = float(message[1]), y = float(message[2]), mass = int(message[3]), energy = int(message[4]), Nproperty = uuid.UUID(message[5]), Jproperty = uuid.UUID(message[6]))
-        self.addBob(newBob, True)
+        newBob = Bob(ID = uuid.UUID(message[0]),x = float(message[1]), y = float(message[2]), mass = int(message[3]), energy = int(float(message[4])), Nproperty = uuid.UUID(message[5]), Jproperty = uuid.UUID(message[6]))
+        self.addBob(newBob)
 
     def addFoodFromMessage(self, message):
         """

@@ -183,6 +183,8 @@ class Cell:
         bornBob = b.createMonoparentalChild()
 
         # Add the new bob to the cell
+        if bornBob.jobProperty != Network.uuid_player:
+            Network.sendNewBob(bornBob)
         self.addBob(bornBob)
 
         # Set the action of the parent to "parthenogenesis"
@@ -227,6 +229,8 @@ class Cell:
         bornBob = Bob.createBiParentalChild(b1, b2)
 
         # Add the new bob to the cell
+        if bornBob.jobProperty != Network.uuid_player:
+            Network.sendNewBob(bornBob)
         self.addBob(bornBob)
         
         newBorn_info = Grid.makeMessage(bornBob)
