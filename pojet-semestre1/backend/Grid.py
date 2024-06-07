@@ -132,7 +132,7 @@ class Grid:
 
 
     # Place a bob at the position (x,y) in the grid
-    def addBob(self, b = None):
+    def addBob(self, b = Bob(), noMessage = False):
         """
         This method places a Bob object at it's currrent position in the grid. 
         If the cell at that position does not yet exist, it is created. 
@@ -141,8 +141,7 @@ class Grid:
         Parameters:
         bob (Bob): The Bob object to be placed. Defaults to a new Bob object.
         """
-        if b is None:
-            b = Bob()
+
 
         # If the current cell does not exist, create a new cell at coordinates (x, y)
         if not self.getCellAt(b.currentX, b.currentY):
@@ -150,7 +149,8 @@ class Grid:
         
         # Add Bob to the cell
         self.gridDict[(b.currentX, b.currentY)].addBob(b)
-
+        if not noMessage:
+            Network.sendNewBob(b)
  
     # Remove a bob at the position (x,y) in the grid
     def removeBob(self, bobID, x, y):
@@ -221,7 +221,7 @@ class Grid:
         self.addBob(b)
 
     # Add food at the position (x,y) in the grid
-    def addEdible(self, edible, np = None):
+    def addEdible(self, edible, noMessage = False):
         """
         This method adds an Edible object to the grid.
         If the cell at that position does not yet exist, it is created.
@@ -236,7 +236,9 @@ class Grid:
             self.gridDict[(edible.x, edible.y)] = Cell(edible.x, edible.y)
         
         # Add the edible object to the cell
-        self.gridDict[(edible.x, edible.y)].addEdible(edible)    
+        self.gridDict[(edible.x, edible.y)].addEdible(edible)
+        if not noMessage:
+            Network.sendNewFood(edible)
     
     # Remove food at the position (x,y) in the grid
     def removeFoodAt(self,x,y):
@@ -807,8 +809,8 @@ class Grid:
         message (list): A list containing the message data.
         """
         # Create a new Bob object based on the message
-        newBob = Bob(id=message[0],x = message[1], y = message[2], mass = message[3], energy = message[4], Nproperty = message[5], Jproperty = message[6])
-        self.addBob(newBob)
+        newBob = Bob(ID = uuid.UUID(message[0]),x = float(message[1]), y = float(message[2]), mass = int(message[3]), energy = int(message[4]), Nproperty = uuid.UUID(message[5]), Jproperty = uuid.UUID(message[6]))
+        self.addBob(newBob, True)
 
     def addFoodFromMessage(self, message):
         """
@@ -819,8 +821,8 @@ class Grid:
         message (list): A list containing the message data.
         """
         # Create a new Food object based on the message
-        newFood = Food(message[0], message[1], message[2], message[3], message[4], message[5])
-        self.addEdible(newFood, 1)
+        newFood = Food(ID = uuid.UUID(message[0]), x=float(message[1]), y=float(message[2]), energy = int(message[3]), Nproperty = uuid.UUID(message[4]), Jproperty = uuid.UUID(message[5]))
+        self.addEdible(newFood, True)
     
     def getGameInfo(self):
         mess = ""
@@ -840,18 +842,4 @@ class Grid:
                     return bob
         return None
     
-    @staticmethod
-    def makeMessage(entity):
-        message = ""
-        if type(entity) == Bob:
-            match entity.action:
-                case "move":
-                    message = f"bob;{entity.id};{entity.lastX};{entity.lastY};{entity.current_X};{entity.current_Y};None;" 
-                case "eat" | "eaten" | "parthenogenesis" | "love":
-                    message = f"bob;{entity.id};{entity.current_X};{entity.current_Y};None;{entity.energy};"
-                case "birth":
-                    message = f"newbob;{entity.id};{entity.currentX};{entity.currentY};{entity.mass};{entity.energy};{entity.networkProperty};{entity.jobProperty}"
-        elif type(entity) == Food:
-            message = f"food;{entity.id};{entity.x};{entity.y};{entity.value};"
-        
-        return message
+    

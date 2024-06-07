@@ -204,6 +204,25 @@ class Cell:
             b1 (Bob): The first Bob.
             b2 (Bob): The second Bob.
         """
+
+        # Si l'autre bob appartient à un autre joueur
+        if b2.networkProperty != Network.uuid_player:
+            # On demande sa propriété réseau
+            Network.requestNetworkProperty(b2.id)
+            Network.recvNetworkProperty()
+
+            # On demande ses statistiques
+            Network.sendMateRequest(b2)
+
+            # On met à jour ses statistiques
+            b2_attributes = Network.recvMateResponse(b2.id)
+            b2.energy = b2_attributes[3]
+            b2.velocity = b2_attributes[4]
+            b2.velocityBuffer = b2.attributes[5]
+            b2.mass = b2_attributes[6]
+            b2.perception = b2_attributes[7]
+            b2.memorySize = b2_attributes[8]
+
         # Create a new bob
         bornBob = Bob.createBiParentalChild(b1, b2)
 
@@ -249,11 +268,6 @@ class Cell:
                     for _ in range(len(otherBobs)):
                         # Select a random Bob object from the list of Bob objects in the cell
                         otherBob = choice(otherBobs)
-
-                        # Request otherBob network property
-                        if otherBob.networkProperty != Network.uuid_player:
-                            Network.requestNetworkProperty(otherBob.id)
-                            Network.recvNetworkProperty()
 
                         # If the other Bob object has enough energy to reproduce by parthenogenesis
                         if otherBob.energy >= Settings.matingEnergyRequirement:

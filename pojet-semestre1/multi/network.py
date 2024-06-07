@@ -105,8 +105,31 @@ class Network:
         Network.sendMessage("Disconnect;"+str(Network.uuid_player))
         Network.pipes.close()
 
+    def timeout(timeout,function,*args):
+        """
+            Attendre la réponse de la connexion et retourne la réponse sinon None
+            
+            args : les arguments de la fonction
+                timeout : le temps d'attente
+                function : la fonction à exécuter
+                *args : les arguments de la fonction
+        """
+    
+        startTime = time.time()
+        timeoutBool = False
+        
+        while(not timeoutBool):
+            ret = function(*args)
+            if ret is not None:
+                return ret
+            if time.time() - startTime > timeout:
+                timeoutBool = True
+        return None
+    
+
 
     # ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️ GESTION DES PROPRIÉTÉS RÉSEAU ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️
+
 
 
     def requestNetworkProperty(entityId):
@@ -171,6 +194,7 @@ class Network:
     # ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️ GESTION DES MESSAGES ENTRANTS ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️
 
 
+
     def processBuffer():
         """ Traiter les messages reçus
 
@@ -196,7 +220,6 @@ class Network:
                     messageLength = int(message.split(";")[0])
                     finalMessage = message.split(";")[1:]
                     finalMessage = ";".join(finalMessage)
-                    print("Received message : ", message)
                     print("Received message : ", finalMessage)
                     if len(finalMessage) == messageLength:
                         messageList.append(finalMessage)
@@ -237,7 +260,7 @@ class Network:
 
                 case "NewFood":
                     Network.processNewFood(message)
-
+                    
     def processBob(message):
         if Network.grid.updateBob(message[1:]) is None:
             #Le bob n'a pas été trouvé, on fait quoi ?
@@ -249,10 +272,18 @@ class Network:
             pass
 
     def processNewBob(message):
-        Network.grid.addBobFromMessage(message[1:])
+        # messsage[7] : jobProperty
+        if message[7] != Network.uuid_player:
+            Network.grid.addBobFromMessage(message[1:])
         
     def processNewFood(message):
         Network.grid.addFoodFromMessage(message[1:])
+    
+
+    
+    # ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️ GESTION DES MESSAGES SORTANTS ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️
+
+
     
     def sendMessage(message):
         """
@@ -263,37 +294,73 @@ class Network:
         """
         length = str(len(message))
         mess = "{"+length+";"+message+"}"
-        print("Sending message : ", mess)
         Network.pipes.send(mess)
         
-    def sendNewBobMessage(bob):
-        #{newbob;positionX;positionY;totalVelocity;mass;energy;perception;memorySize;maxAmmos;ID;Nproperty;Jproperty}{newbob;positionX;positionY;totalVelocity;mass;energy;perception;memorySize;maxAmmos;ID;Nproperty;Jproperty}
-        message = "{" + "newbob" + "}"
-        pass
-  
-    def timeout(timeout,function,*args):
-        """
-            Attendre la réponse de la connexion et retourne la réponse sinon None
-            
-            args : les arguments de la fonction
-                timeout : le temps d'attente
-                function : la fonction à exécuter
-                *args : les arguments de la fonction
-        """
-    
-        startTime = time.time()
-        timeoutBool = False
+    def sendNewBob(bob):        # {newbob;X;Y;totalVelocity;mass;energy;perception;memorySize;maxAmmos;ID;Nproperty;Jproperty}
+
+        message = "NewBob" + ";" + str(bob.id) + ";" + str(bob.currentX) + ";" + str(bob.currentY) + ";" + str(bob.mass) + ";" + str(bob.energy) + ";" + str(bob.networkProperty) + ";" + str(bob.jobProperty)
+        Network.sendMessage(message)
+
+    def sendNewFood(food):      # {newfood;X;Y;value;ID;Nproperty;Jproperty}
         
-        while(not timeoutBool):
-            ret = function(*args)
-            if ret is not None:
-                return ret
-            if time.time() - startTime > timeout:
-                timeoutBool = True
+        message = "NewFood" + ";" + str(food.id) + ";" + str(food.x) + ";" + str(food.y) + ";" + str(food.value) + ";" + str(food.networkProperty) + ";" + str(food.jobProperty)
+        Network.sendMessage(message)
+
+    def sendBobUpdate(bob):     # {bob;id;positionX;positionY;None;energy}
+        
+        if bob.action == "move":
+            # Envoie la nouvelle position du bob
+            message = f"bob;{bob.id};{bob.current_X};{bob.current_Y};None"
+
+        elif bob.action == "eat" or bob.action == "parthenogenesis" or bob.action == "love":
+            # Envoie la nouvelle énergie du bob
+            message = f"bob;{bob.id};None;None;{bob.energy}"
+
+        elif bob.action == "eaten":
+            # Met l'énergie du bob à 0
+            message = f"bob;{bob.id};None;None;0"
+
+        Network.sendMessage(message)
+    
+    def sendFoodCreation(food): # {newfood;positionX;positionY;value;ID;Nproperty;Jproperty}
+        
+        # Envoie la position et la valeur de la nourriture
+        message = f"NewFood;{food.x};{food.y};{food.value};{food.id};{food.networkProperty};{food.jobProperty}"
+        Network.sendMessage(message)
+
+    def sendFoodUpdate(food):   # {food;id;positionX;positionY;NewValue}
+        
+        # Envoie la nouvelle valeur de la nourriture
+        message = f"food;{food.id};None;None;{food.value}"
+        Network.sendMessage(message)
+
+
+
+    # ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️ GESTION DE LA REPRODUCTION ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️
+
+
+
+    def sendMateRequest(bob):       # {MateRequest;bob.id}
+        # Envoie une demande de reproduction
+        message = f"MateRequest;{bob.id}"
+        Network.sendMessage(message)
+
+    def sendMateResponse(bob):      # {MateResponse;player_id;bob_id;energy;velocity;velocityBuffer;mass;perception;memorySize}
+
+        # Envoie une réponse à une demande de reproduction
+        message = f"MateResponse;{bob.id};{bob.energy};{bob.velocity};{bob.velocityBuffer};{bob.mass};{bob.perception};{bob.memorySize}"
+        Network.sendMessage(message)
+
+    def recvMateResponse(bob_id):
+        # Attend une réponse à une demande de reproduction
+        messageList = Network.processBuffer()
+
+        for message in messageList:
+            message = message.split(";")
+            if message[0] == "MateResponse" and message[1] == str(Network.uuid_player) and message[2] == str(bob_id):
+                return message
         return None
 
-
-    # def 
 
     
 # EXEMPLES DE MESSAGE

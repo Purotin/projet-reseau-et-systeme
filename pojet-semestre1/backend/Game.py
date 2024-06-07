@@ -82,7 +82,7 @@ class Game:
                 grid.addBob(Bob(x=bob["x"], y=bob["y"], ID=bob["id"], mass=bob["mass"], energy=bob["energy"], Nproperty=bob["networkProperty"], Jproperty=bob["jobProperty"]))
         
             for food in self.networkArgs["foods"]:
-                self.grid.addEdible(Food(x=food["x"], y=food["y"], ID=food["id"], energy=food["energy"], Nproperty=food["networkProperty"], Jproperty=food["jobProperty"]))
+                grid.addEdible(Food(x=food["x"], y=food["y"], ID=food["id"], energy=food["energy"], Nproperty=food["networkProperty"], Jproperty=food["jobProperty"]))
             
         # Si la réponse de connexion n'est pas reçue
         else:
@@ -90,7 +90,7 @@ class Game:
             self.networkArgs = None
 
             # Création de la grille à partir de la taille donnée en argument du constructeur
-            grid = Grid(grid_size, 100, 0)
+            grid = Grid(grid_size, 10, 0)
 
         # ⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️ FIN DE LA CONNEXION AU RÉSEAU ⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️
 
