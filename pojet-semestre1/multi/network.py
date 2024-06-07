@@ -3,73 +3,20 @@ import uuid
 # from multi.data_updater import *
 from multi.properties_manager import *
 from multi.pipe_handler import PipeHandler
+import time
 
 
 class Network:
 
     uuid_player = uuid.uuid4()
-    
     grid = None
+    messageBuffer = ""
 
     def __init__(self):
         print("Network initialized")
-        
-    def disconnect():
-        Network.pipes.send("{Disconnect;"+str(Network.uuid_player)+"}")
-        Network.pipes.close()
 
-    def processBuffer():
-        buffer = ""
-        for i in range(10):
-            buffer += Network.pipes.recv()
+    #  ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️ GESTION DE LA CONNEXION ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️
 
-
-        start_index = None
-        for i in range(len(buffer)):
-        # Si le buffer contient un début de message
-            if buffer[i] == "{":
-                start_index = i
-            elif buffer[i] == "}":
-                if start_index is not None:
-                    message = buffer[start_index+1:i]
-                    start_index = None
-                    #Network.processMessage(message)
-                    print(message)
-                    Network.processMessage(message)
-
-    def processMessage(message):
-        # Traiter le message
-        
-        # Si le message est une requête propriété réseau
-        message = message.split(";")
-        header = message[0]
-
-        match header:
-            case "ConnectionRequest":
-                Network.processConnectionRequest(message)
-
-            case "ConnectionResponse":
-                Network.processConnectionResponse(message)
-
-            case "NetworkPropertyRequest":
-                Network.processNetworkPropertyRequest(message)
-
-            case "NetworkPropertyResponse":
-                Network.processNetworkPropertyResponse(message)
-
-            case "Bob":
-                Network.grid.updateBob(message[1:])
-
-            case "Food":
-                Network.grid.updateFood(message[1:])
-
-            case "NewBob":
-                Network.grid.addBobFromMessage(message[1:])
-
-            case "NewFood":
-                Network.grid.addFoodFromMessage(message[1:])
-
-    # FONCTION OK
     def requestConnection(IP, port):
         """Demande de connexion à la partie en cours
 
@@ -88,9 +35,8 @@ class Network:
         # Envoyer la requête de connexion
         strUuid = str(Network.uuid_player)
         Network.pipes = PipeHandler()
-        Network.pipes.send("{ConnectionRequest;"+strUuid+"}")
-
-    # FONCTION OK       
+        Network.sendMessage("ConnectionRequest;"+strUuid)
+   
     def processConnectionRequest(message):
         """ Traite la requête de connexion à la partie en cours
 
@@ -106,14 +52,23 @@ class Network:
         strUuid = str(Network.uuid_player)
         # game_info doit contenir tous les objets du jeu
         game_info = Network.grid.getGameInfo()
-        reponse = "{ConnectionResponse;"+message[1]+";"+strUuid+";"+game_info+"}"
-        print(reponse)
-        Network.pipes.send(reponse)
-
-    # FONCTION OK
+        reponse = "ConnectionResponse;"+message[1]+";"+strUuid+";"+game_info
+        Network.sendMessage(reponse)
+      
+    def recvConnectionResponse():
+        """
+            Attendre la réponse de la connexion et retourne la réponse sinon None
+        """
+        messageList = Network.processBuffer()   
+        
+        for message in messageList:
+            message = message.split(";")
+            if message[0] == "ConnectionResponse" and message[1] == str(Network.uuid_player):
+                return message
+        return None
+     
     def processConnectionResponse(message):
         """ Traite la réponse à la requête de connexion
-
         Args : message (str) : contient le header, la taille de la grille et tous les bobs et nourritures de la partie en cours
 
         Return (dict) : le dictionnaire contenant la taille de la grille, la liste de tous les bobs et la liste de toutes les nourritures
@@ -146,33 +101,89 @@ class Network:
                 
         return dataDictionnary
 
-    def sendNetworkPropertyRequest(entityId):
-        # Broadcast for Nproperty
-        message = "{NetworkPropertyRequest;"+Network.uuid_player + ";" + entityId + "}"
-        Network.pipes.send(message)
+    def disconnect():
+        Network.sendMessage("Disconnect;"+str(Network.uuid_player))
+        Network.pipes.close()
 
+
+    # ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️ GESTION DES PROPRIÉTÉS RÉSEAU ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️
+
+
+    def requestNetworkProperty(entityId):
+        # Broadcast for Nproperty
+        message = "NetworkPropertyRequest;"+Network.uuid_player + ";" + entityId
+        Network.sendMessage(message)
+   
     def processNetworkPropertyRequest(message):
-        # Do I have the Nproperty ?
-             # If yes, give it
-             # If not, don't answer
+        """ Traite la requête de propriété réseau
+
+        Args:
+            message (str) : contient le header NetworkPropertyRequest et l'UID de l'objet
+
+        Explications :
+            
+        """
         
+        # message[1] : player_id
+        # message[2] : obj_id
+    
         entity = Network.grid.findEntityById(message[2])
 
         if entity.networkProperty == Network.uuid_player:
-            response = "{NetworkPropertyResponse;"+ message[1] + ";" + message[2] + "}"
-            Network.pipes.send(response)
+            response = "NetworkPropertyResponse;"+ message[1] + ";" + message[2]
+            Network.sendMessage(response)
             entity.networkProperty = message[1]
 
-    def sendMessage(message):
-        mess = "{"+message+"}"
-        Network.pipes.send(mess)
+    def recvNetworkProperty(obj_id):
+        """ Attendre la réponse de la connexion et mettre à jour la propriété réseau de l'objet
+
+        Args:
+            obj_id (str) : l'UID de l'objet
         
-    def waitResponseConnection():
+        Explications :
+            Cette fonction est appelée par la fonction timeout pour attendre la réponse de la connexion
+            - Elle parcourt les messages reçus
+            - Si le message est une réponse de connexion et que la réponse est pour moi, on met à jour la propriété réseau de l'objet
+            - On place les autres messages dans messageBuffer
+        """     
+        messageList = Network.processBuffer()
+        
+
+        # On cherche un message de type {NetworkPropertyResponse;player_id;obj_id}
+        for message in messageList:
+            length = len(message)
+            message = message.split(";")
+            # Si le message est une réponse de connexion et que la réponse est pour moi
+            if message[0] == "NetworkPropertyResponse" and message[1] == str(Network.uuid_player):
+
+
+                # On met à jour la propriété réseau de l'objet
+                entity = Network.grid.findEntityById(message[2])
+                entity.networkProperty = Network.uuid_player
+            
+            # On ignore les messages qui concernent l'objet pour lequel on a la propriété réseau
+            # ex : ignorer Déplacement bob : {bob;id;last_X;last_Y;positionX;positionY;None;}
+            elif (message[1] !=str(obj_id)):
+                Network.messageBuffer += "{"+length+";"+message+"}"
+                
+     
+
+    # ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️ GESTION DES MESSAGES ENTRANTS ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️
+
+
+    def processBuffer():
+        """ Traiter les messages reçus
+
+        Explications :
+            Cette fonction parcourt les messages reçus et ceux qui sont dans le messageBuffer
+    
         """
-            Attendre la réponse de la connexion et retourne la réponse sinon None
-        """
-        buffer = Network.pipes.recv()
-        message = ""
+        buffer = Network.messageBuffer
+        messageList = []
+        for i in range(20):
+            buffer += Network.pipes.recv()
+
+
         start_index = None
         for i in range(len(buffer)):
         # Si le buffer contient un début de message
@@ -180,13 +191,110 @@ class Network:
                 start_index = i
             elif buffer[i] == "}":
                 if start_index is not None:
-                    message = buffer[start_index+1:i].split(";")
+                    message = buffer[start_index+1:i]
                     start_index = None
-                    # Si le message est une réponse de connexion et que la réponse est pour moi
-                    if message[0] == "ConnectionResponse" and message[1] == str(Network.uuid_player):
-                        return message
+                    messageLength = int(message.split(";")[0])
+                    finalMessage = message.split(";")[1:]
+                    finalMessage = ";".join(finalMessage)
+                    print("Received message : ", message)
+                    print("Received message : ", finalMessage)
+                    if len(finalMessage) == messageLength:
+                        messageList.append(finalMessage)
+        return messageList
+
+    def processMessages():
+        # Traiter les message
+        
+        messageList = Network.processBuffer()
+        
+        for message in messageList:
+        
+            # Si le message est une requête propriété réseau
+            message = message.split(";")
+            header = message[0]
+
+            match header:
+                case "ConnectionRequest":
+                    Network.processConnectionRequest(message)
+
+                case "ConnectionResponse":
+                    Network.processConnectionResponse(message)
+
+                case "NetworkPropertyRequest":
+                    Network.processNetworkPropertyRequest(message)
+
+                case "NetworkPropertyResponse":
+                    Network.processNetworkPropertyResponse(message)
+
+                case "Bob":
+                    Network.processBob(message)
+
+                case "Food":
+                    Network.processFood(message)
+
+                case "NewBob":
+                    Network.processNewBob(message)
+
+                case "NewFood":
+                    Network.processNewFood(message)
+
+    def processBob(message):
+        if Network.grid.updateBob(message[1:]) is None:
+            #Le bob n'a pas été trouvé, on fait quoi ?
+            pass
+
+    def processFood(message):
+        if Network.grid.updateFood(message[1:]) is None:
+            #La nourriture n'a pas été trouvée, on fait quoi ?
+            pass
+
+    def processNewBob(message):
+        Network.grid.addBobFromMessage(message[1:])
+        
+    def processNewFood(message):
+        Network.grid.addFoodFromMessage(message[1:])
+    
+    def sendMessage(message):
+        """
+            Envoie un message à la connexion
+            ajoute la taille du message au début du message
+            message : le message à envoyer
+        
+        """
+        length = str(len(message))
+        mess = "{"+length+";"+message+"}"
+        print("Sending message : ", mess)
+        Network.pipes.send(mess)
+        
+    def sendNewBobMessage(bob):
+        #{newbob;positionX;positionY;totalVelocity;mass;energy;perception;memorySize;maxAmmos;ID;Nproperty;Jproperty}{newbob;positionX;positionY;totalVelocity;mass;energy;perception;memorySize;maxAmmos;ID;Nproperty;Jproperty}
+        message = "{" + "newbob" + "}"
+        pass
+  
+    def timeout(timeout,function,*args):
+        """
+            Attendre la réponse de la connexion et retourne la réponse sinon None
+            
+            args : les arguments de la fonction
+                timeout : le temps d'attente
+                function : la fonction à exécuter
+                *args : les arguments de la fonction
+        """
+    
+        startTime = time.time()
+        timeoutBool = False
+        
+        while(not timeoutBool):
+            ret = function(*args)
+            if ret is not None:
+                return ret
+            if time.time() - startTime > timeout:
+                timeoutBool = True
         return None
-                        
+
+
+    # def 
+
     
 # EXEMPLES DE MESSAGE
 
@@ -195,8 +303,9 @@ class Network:
 # bob mange bob ou food     : {bob;id;positionX;positionY;None;energy}
 # nourriture eaten          : {food;id;positionX;positionY;NewValue}
 
-# Création de bob           : {newbob;ID;positionX;positionY;mass;energy;Nproperty;Jproperty}
+# Création de bob           : {newbob;positionX;positionY;totalVelocity;mass;energy;perception;memorySize;maxAmmos;ID;Nproperty;Jproperty}
 # Création de nourriture    : {newfood;positionX;positionY;value;ID;Nproperty;Jproperty}
-# Réponse prop réseau       : {NetworkProperty;player_id;obj_id;networkProperty}
+
+# Réponse prop réseau       : {NetworkProperty;player_id;obj_id}
 # Requête de connexion      : {ConnectionRequest}
 # Réponse de connexion      : {ConnectionResponse;receiverJobProperty;senderJobProperty;gridSize;..........}

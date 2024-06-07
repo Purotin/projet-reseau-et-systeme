@@ -147,8 +147,9 @@ class Cell:
                         if massRatio < Settings.massRatioThreshold:
                             # Request otherBob network property
                             if otherBob.networkProperty != Network.uuid_player:
-                                Network.sendNetworkPropertyRequest(otherBob.id)
-                                Network.processBuffer()
+                                Network.requestNetworkProperty(otherBob.id)
+
+                                Network.timeout(5, Network.recvNetworkProperty, otherBob.id)
 
                             if otherBob.networkProperty == Network.uuid_player:
                                 continue
@@ -244,18 +245,15 @@ class Cell:
                 elif Settings.enableSexualReproduction and bob.energy >= Settings.matingEnergyRequirement:
                     # Get the list of Bob objects in the cell
                     otherBobs = [otherBob for otherBob in self.bobs if otherBob != bob]
-                    # If there is another Bob object in the cell
-                    if otherBobs:
-                        for _ in range(len(otherBobs)):
-                            # Select a random Bob object from the list of Bob objects in the cell
-                            otherBob = choice(otherBobs)
-                            # Request otherBob network property
-                            if otherBob.networkProperty != Network.uuid_player:
-                                Network.sendNetworkPropertyRequest(otherBob.id)
-                                Network.processBuffer()
 
-                            if otherBob.networkProperty == Network.uuid_player:
-                                break                       
+                    for _ in range(len(otherBobs)):
+                        # Select a random Bob object from the list of Bob objects in the cell
+                        otherBob = choice(otherBobs)
+
+                        # Request otherBob network property
+                        if otherBob.networkProperty != Network.uuid_player:
+                            Network.requestNetworkProperty(otherBob.id)
+                            Network.recvNetworkProperty()
 
                         # If the other Bob object has enough energy to reproduce by parthenogenesis
                         if otherBob.energy >= Settings.matingEnergyRequirement:

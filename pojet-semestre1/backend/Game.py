@@ -64,17 +64,12 @@ class Game:
         Network.requestConnection("239.0.0.1", "1234")
     
         first_connection = True
-        start_time = time.time()
-        timeoutB = True
 
         # Attente de la réponse de connexion
-        while timeoutB:
-            message = Network.waitResponseConnection()
-            if message != None:
-                timeoutB = False
-                first_connection = False
-            if time.time() - start_time > 5:
-                timeoutB = False
+        message = Network.timeout(5,Network.recvConnectionResponse)
+        if message is not None:
+            first_connection = False
+
         
         # Si la réponse de connexion est reçue
         if not first_connection:
@@ -84,7 +79,7 @@ class Game:
             # Création de la grille à partir des données reçues
             grid = Grid(self.networkArgs["gridSize"], 0, 0)
             for bob in self.networkArgs["bobs"]:
-                self.grid.addBob(Bob(x=bob["x"], y=bob["y"], ID=bob["id"], mass=bob["mass"], energy=bob["energy"], Nproperty=bob["networkProperty"], Jproperty=bob["jobProperty"]))
+                grid.addBob(Bob(x=bob["x"], y=bob["y"], ID=bob["id"], mass=bob["mass"], energy=bob["energy"], Nproperty=bob["networkProperty"], Jproperty=bob["jobProperty"]))
         
             for food in self.networkArgs["foods"]:
                 self.grid.addEdible(Food(x=food["x"], y=food["y"], ID=food["id"], energy=food["energy"], Nproperty=food["networkProperty"], Jproperty=food["jobProperty"]))
@@ -149,8 +144,7 @@ class Game:
             # GESTION DES DONNÉES RÉSEAU REÇUES
 
 
-            #Network.processBuffer()
-            Network.processBuffer()
+            Network.processMessages()
 
 
             # handle events

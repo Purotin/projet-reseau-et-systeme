@@ -80,10 +80,10 @@ class Map:
 
         # Tiles assets - index is the height of the tile
         self.tilesAssets = [
-            self.loadImage('assets/ext/isometric-blocks/PNG/Platformer tiles/platformerTile_26.png'), # water
-            self.loadImage('assets/ext/isometric-blocks/PNG/Platformer tiles/platformerTile_11.png'), # sand
+            self.loadImage('assets/ext/isometric-blocks/PNG/Platformer tiles/platformerTile_48.png'), # water
+            self.loadImage('assets/ext/isometric-blocks/PNG/Platformer tiles/platformerTile_48.png'), # sand
             self.loadImage('assets/ext/isometric-blocks/PNG/Platformer tiles/platformerTile_48.png'), # grass
-            self.loadImage('assets/ext/isometric-blocks/PNG/Platformer tiles/platformerTile_23.png'), # box
+            self.loadImage('assets/ext/isometric-blocks/PNG/Platformer tiles/platformerTile_48.png'), # box
         ]
 
         # Default tile asset - used when the height is not enabled
