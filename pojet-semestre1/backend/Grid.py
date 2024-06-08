@@ -189,7 +189,7 @@ class Grid:
             del self.gridDict[(x, y)]
     
     # Move a bob from the position to the position (x,y) in the grid
-    def moveBobTo(self, b, x, y):
+    def moveBobTo(self, b, x, y, noMessage = False):
         """
         This method moves a Bob object from its current position to a new position in the grid.
         If the cell at the new position does not yet exist, it is created.
@@ -200,6 +200,7 @@ class Grid:
         bob (Bob): The Bob object to be moved.
         x (int): The x coordinate of the position to move Bob to.
         y (int): The y coordinate of the position to move Bob to.
+        noMessage (bool): A boolean indicating whether to send a message to the network. Defaults to False.
         """
         # If the position is the same as the bob's current position, set its action to idle
         if (b.currentX, b.currentY) == (x, y):
@@ -217,6 +218,10 @@ class Grid:
         
         # Add the bob to its new position
         self.addBob(b)
+
+        # Send the new position to the network
+        if not noMessage:
+            Network.sendBobUpdate(b)
 
     # Add food at the position (x,y) in the grid
     def addEdible(self, edible, noMessage = False):
@@ -769,7 +774,7 @@ class Grid:
         # Bob moved
         if message[3] is not None:    
             # Move the bob
-            self.moveBobTo(bob, message[3], message[4])
+            self.moveBobTo(bob, message[3], message[4], True)
 
         # Bob ate another bob or food
         else:

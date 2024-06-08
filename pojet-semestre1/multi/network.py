@@ -250,36 +250,18 @@ class Network:
                     Network.processNetworkPropertyResponse(message)
 
                 case "Bob":
-                    Network.processBob(message)
+                    Network.grid.updateBob(message[1:])
 
                 case "Food":
-                    Network.processFood(message)
-
+                    Network.grid.updateFood(message[1:])
+                    
                 case "NewBob":
-                    Network.processNewBob(message)
+                    Network.grid.addBobFromMessage(message[1:])
 
                 case "NewFood":
-                    Network.processNewFood(message)
-                    
-    def processBob(message):
-        if Network.grid.updateBob(message[1:]) is None:
-            #Le bob n'a pas été trouvé, on fait quoi ?
-            pass
-
-    def processFood(message):
-        if Network.grid.updateFood(message[1:]) is None:
-            #La nourriture n'a pas été trouvée, on fait quoi ?
-            pass
-
-    def processNewBob(message):
-        # messsage[7] : jobProperty
-        if message[7] != Network.uuid_player:
-            Network.grid.addBobFromMessage(message[1:])
+                    Network.grid.addFoodFromMessage(message[1:])
         
-    def processNewFood(message):
-        Network.grid.addFoodFromMessage(message[1:])
     
-
     
     # ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️ GESTION DES MESSAGES SORTANTS ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️
 
@@ -306,11 +288,11 @@ class Network:
         message = "NewFood" + ";" + str(food.id) + ";" + str(food.x) + ";" + str(food.y) + ";" + str(food.value) + ";" + str(food.networkProperty) + ";" + str(food.jobProperty)
         Network.sendMessage(message)
 
-    def sendBobUpdate(bob):     # {bob;id;positionX;positionY;None;energy}
+    def sendBobUpdate(bob):     # {bob;id;positionX;positionY;energy}
         
         if bob.action == "move":
             # Envoie la nouvelle position du bob
-            message = f"bob;{bob.id};{bob.current_X};{bob.current_Y};None"
+            message = f"bob;{bob.id};{bob.current_X};{bob.current_Y};{bob.energy}"
 
         elif bob.action == "eat" or bob.action == "parthenogenesis" or bob.action == "love":
             # Envoie la nouvelle énergie du bob

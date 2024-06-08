@@ -299,8 +299,12 @@ class Game:
                                 Network.sendNewBob(bob)
                             self.grid.addBob(bob)
                         elif self.editorModeType == "food":
-                            self.grid.addEdible(Food(self.editorModeCoords[0], self.editorModeCoords[1]))
-                    
+                            food = Food(self.editorModeCoords[0], self.editorModeCoords[1])
+                            if food.jobProperty != Network.uuid_player:
+                                Network.sendNewFood(food)
+                            self.grid.addEdible(food)
+                            
+                            
                     if event.buttons[2] == 1:
                         if self.editorModeType == "bob":
                             self.grid.removeAllBobsAt(*self.editorModeCoords)

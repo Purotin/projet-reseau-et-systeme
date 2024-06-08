@@ -79,11 +79,11 @@ class Cell:
             self.edibleObject.value += edibleObject.value
 
 
+
     # Cell events methods
         
 
     # Feed all bobs in the cell
-        
     def eat(self, b, edibleObject):
         """
         This method makes a Bob eat an edible object.
@@ -197,6 +197,9 @@ class Cell:
         # Reduce the energy of the parent
         b.incrementEnergy(-Settings.motherEnergy)
 
+        # Send the update to the grid
+        Network.sendBobUpdate(b)
+
     # Make two bobs reproduce (sexual reproduction)
     def mate(self, b1, b2):
         """
@@ -211,13 +214,13 @@ class Cell:
         if b2.networkProperty != Network.uuid_player:
             # On demande sa propriété réseau
             Network.requestNetworkProperty(b2.id)
-            Network.recvNetworkProperty()
+            Network.timeout(5,Network.recvNetworkProperty)
 
             # On demande ses statistiques
             Network.sendMateRequest(b2)
 
             # On met à jour ses statistiques
-            b2_attributes = Network.recvMateResponse(b2.id)
+            b2_attributes = Network.timeout(5,Network.recvMateResponse,b2.id)
             b2.energy = b2_attributes[3]
             b2.velocity = b2_attributes[4]
             b2.velocityBuffer = b2.attributes[5]
@@ -249,6 +252,10 @@ class Cell:
         # Reduce the energy of the bobs
         b1.incrementEnergy(-Settings.matingEnergyConsumption)
         b2.incrementEnergy(-Settings.matingEnergyConsumption)
+
+        # Send the update to the grid
+        Network.sendBobUpdate(b1)
+        Network.sendBobUpdate(b2)
         
     # Make all bobs in the cell reproduce (parthenogenesis or sexual reproduction)
     def reproduceCellBobs(self):
