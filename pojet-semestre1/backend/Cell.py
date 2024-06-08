@@ -233,6 +233,12 @@ class Cell:
 
             # On met à jour ses statistiques
             b2_attributes = Network.timeout(5,Network.recvMateResponse,b2.id)
+
+            # On supprime le bob s'il n'a pas été trouvé par le détenteur de la propriété réseau
+            if b2_attributes == -1:
+                self.removeBob(b2.id)
+                return
+            
             b2.energy = b2_attributes[3]
             b2.velocity = b2_attributes[4]
             b2.velocityBuffer = b2.attributes[5]
@@ -247,9 +253,6 @@ class Cell:
         if bornBob.jobProperty != Network.uuid_player:
             Network.sendNewBob(bornBob)
         self.addBob(bornBob)
-        
-        newBorn_info = Grid.makeMessage(bornBob)
-        Network.sendMessage(newBorn_info)
 
         # Set the action of the two parents to "mate"
         b1.action = "love"

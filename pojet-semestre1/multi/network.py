@@ -127,7 +127,7 @@ class Network:
                 return ret
             if time.time() - startTime > timeout:
                 timeoutBool = True
-        return -1
+        return None
     
 
 
@@ -388,7 +388,9 @@ class Network:
             message = message.split(";")
             if message[0] == "MateResponse" and message[1] == str(Network.uuid_player) and message[2] == str(bob_id):
                 return message
-        return None
+            
+        # Si on n'a pas reçu de réponse, on retourne -1
+        return -1
 
 
     

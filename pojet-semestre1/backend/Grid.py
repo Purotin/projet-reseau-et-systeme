@@ -211,7 +211,7 @@ class Grid:
         noMessage (bool): A boolean indicating whether to send a message to the network. Defaults to False.
         """
         # If the position is the same as the bob's current position, set its action to idle
-        if (b.currentX, b.currentY) == (x, y) or noMessage:
+        if (b.currentX, b.currentY) == (x, y):
             b.action = "idle"
         # Else, set its action to move
         else:
@@ -265,7 +265,7 @@ class Grid:
             return
         
         # Remove the food from the cell
-        if cell.edibleObject.jobProperty == jobProperty:
+        if cell.edibleObject is not None and cell.edibleObject.jobProperty == jobProperty:
             cell.edibleObject = None
 
 
@@ -620,6 +620,13 @@ class Grid:
             if b.energy <= 0 and b.action != "eaten":
                 b.action = "decay"
 
+        # Update the action of all foreign bobs
+        foreignBobs = [b for b in self.getAllBobs() if b.jobProperty != Network.uuid_player]
+        for b in foreignBobs:
+            if b.action == "move":
+                b.lastX, b.lastY = b.currentX, b.currentY
+                b.action = "idle"
+
 
 
     # Day events
@@ -745,7 +752,7 @@ class Grid:
             return
 
         # Remove all food from the grid
-        self.removeAllEdibles()
+        self.removeAllEdibles(Network.uuid_player)
         Network.sendRemoveAllFoods()
 
         # Spawn food
