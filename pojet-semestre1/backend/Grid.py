@@ -176,13 +176,21 @@ class Grid:
         if cell.isEmpty():
             del self.gridDict[(x, y)]
     
-    def removeAllBobsAt(self, x, y):
+    def removeAllBobsAt(self, x, y, jobProperty):
+        """
+        This method removes a Bob object from the grid.
+        
+        Parameters:
+        x (int): The x coordinate of the position to remove Bob from.
+        y (int): The y coordinate of the position to remove Bob from.
+        jobProperty (int): The jobProperty of the Bob object to be removed.
+        """
         cell = self.getCellAt(x, y)
         if not cell:
             return
         
         # Else, remove it from the grid
-        cell.bobs = [b for b in cell.bobs if b.jobProperty != Network.uuid_player]
+        cell.bobs = [b for b in cell.bobs if b.jobProperty != jobProperty]
 
         # Remove the cell from the dictionnary if it is now empty
         if cell.isEmpty():
@@ -242,7 +250,7 @@ class Grid:
         self.gridDict[(edible.x, edible.y)].addEdible(edible)
     
     # Remove food at the position (x,y) in the grid
-    def removeFoodAt(self,x,y, jobProperty = None):
+    def removeFoodAt(self,x,y, jobProperty):
         """
         This method removes a Food object from the grid.
 
@@ -257,7 +265,7 @@ class Grid:
             return
         
         # Remove the food from the cell
-        if cell.edibleObject.jobProperty == Network.uuid_player:
+        if cell.edibleObject.jobProperty == jobProperty:
             cell.edibleObject = None
 
 
@@ -758,13 +766,18 @@ class Grid:
 
         Parameters:
         message (list): A list containing the message data.
+
+        Explainations:
+        The received message lookes like {Bob;bob_id;X;Y;energy}
         """
         # Retrieve the Bob object from the grid based on the message
+
+
         bob = None
-        bobs = self.getBobsAt(message[1], message[2])
+        bobs = self.getBobsAt(message[2], message[3])
     
         for b in bobs:
-            if b.id == message[0]:
+            if b.id == message[1]:
                 bob = b
                 break
         if bob is None:
@@ -773,7 +786,7 @@ class Grid:
         # Bob moved
         if message[3] is not None:    
             # Move the bob
-            self.moveBobTo(bob, message[3], message[4], True)
+            self.moveBobTo(bob, message[2], message[3], True)
 
         # Bob ate another bob or food
         else:

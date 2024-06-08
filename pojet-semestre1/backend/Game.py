@@ -305,9 +305,9 @@ class Game:
                             
                     if event.buttons[2] == 1:
                         if self.editorModeType == "bob":
-                            self.grid.removeAllBobsAt(*self.editorModeCoords)
+                            self.grid.removeAllBobsAt(*self.editorModeCoords, Network.uuid_player)
                         elif self.editorModeType == "food":
-                            self.grid.removeFoodAt(*self.editorModeCoords)
+                            self.grid.removeFoodAt(*self.editorModeCoords, Network.uuid_player)
                             
                             
                 if event.type == pygame.MOUSEBUTTONDOWN:
@@ -329,9 +329,9 @@ class Game:
                     if event.button == 3:
 
                         if self.editorModeType == "bob":
-                            self.grid.removeAllBobsAt(*self.editorModeCoords)
+                            self.grid.removeAllBobsAt(*self.editorModeCoords, Network.uuid_player)
                         elif self.editorModeType == "food":
-                            self.grid.removeFoodAt(*self.editorModeCoords)
+                            self.grid.removeFoodAt(*self.editorModeCoords, Network.uuid_player)
 
                     
             if event.type == pygame.VIDEORESIZE:
