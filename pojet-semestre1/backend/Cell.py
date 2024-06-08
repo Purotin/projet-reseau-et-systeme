@@ -148,7 +148,10 @@ class Cell:
                             if otherBob.networkProperty != Network.uuid_player:
                                 Network.requestNetworkProperty(otherBob.id)
 
-                                Network.timeout(5, Network.recvNetworkProperty, otherBob.id)
+                                # On supprime le bob s'il n'a pas été trouvé par le détenteur de la propriété réseau
+                                if Network.timeout(5, Network.recvNetworkProperty, otherBob.id) == -1:
+                                    self.removeBob(otherBob.id)
+                                    continue
 
                             if otherBob.networkProperty == Network.uuid_player:
                                 continue
@@ -213,7 +216,9 @@ class Cell:
         if b2.networkProperty != Network.uuid_player:
             # On demande sa propriété réseau
             Network.requestNetworkProperty(b2.id)
-            Network.timeout(5,Network.recvNetworkProperty)
+            if Network.timeout(5,Network.recvNetworkProperty) == -1:
+                self.removeBob(b2.id)
+                return
 
             # On demande ses statistiques
             Network.sendMateRequest(b2)

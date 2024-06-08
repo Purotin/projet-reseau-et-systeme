@@ -127,7 +127,7 @@ class Network:
                 return ret
             if time.time() - startTime > timeout:
                 timeoutBool = True
-        return None
+        return -1
     
 
 
@@ -154,6 +154,10 @@ class Network:
         # message[2] : obj_id
     
         entity = Network.grid.findEntityById(message[2])
+
+        if entity is None:
+            response = "NetworkPropertyResponse;"+ message[1] + ";None"
+            Network.sendMessage(response)
 
         if entity.networkProperty == Network.uuid_player:
             response = "NetworkPropertyResponse;"+ message[1] + ";" + message[2]
@@ -183,6 +187,9 @@ class Network:
             # Si le message est une réponse de connexion et que la réponse est pour moi
             if message[0] == "NetworkPropertyResponse" and message[1] == str(Network.uuid_player):
 
+                # Si l'entité n'existe pas chez l'autre joueur, on retourne -1
+                if message[2] == "None":
+                    return -1
 
                 # On met à jour la propriété réseau de l'objet
                 entity = Network.grid.findEntityById(message[2])
