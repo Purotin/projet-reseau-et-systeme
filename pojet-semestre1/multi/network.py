@@ -62,9 +62,12 @@ class Network:
         messageList = Network.processBuffer()   
         
         for message in messageList:
+            length = len(message)
             message = message.split(";")
             if message[0] == "ConnectionResponse" and message[1] == str(Network.uuid_player):
                 return message
+            else:
+                Network.messageBuffer += "{"+length+";"+message+"}"
         return None
      
     def processConnectionResponse(message):
@@ -262,19 +265,20 @@ class Network:
                     Network.grid.addFoodFromMessage(message[1:])
                 
                 case "Disconnect":
-                    pass
+                    Network.grid.removeAllEdibles(uuid.UUID(message[1]))
+                    Network.grid.removeAllBobs(uuid.UUID(message[1]))
                 
                 case "RemoveFood":
-                    Network.grid.removeFoodAt(message[1], message[2], message[3])
+                    Network.grid.removeFoodAt(int(message[1]), int(message[2]), uuid.UUID(message[3]))
                     
                 case "RemoveBob":
-                    Network.grid.removeAllBobsAt(message[1], message[2], message[3])
+                    Network.grid.removeAllBobsAt(int(message[1]), int(message[2]), uuid.UUID(message[3]))
                     
-                case "RemoveAllFood":
-                    Network.grid.removeAllFood(message[1])
+                case "RemoveAllFoods":
+                    Network.grid.removeAllEdibles(uuid.UUID(message[1]))
                 
-                case "RemoveAllBob":
-                    Network.grid.removeAllBobs(message[1])
+                case "RemoveAllBobs":
+                    Network.grid.removeAllBobs(uuid.UUID(message[1]))
         
     
     
@@ -343,12 +347,12 @@ class Network:
         message = f"RemoveBob;{x};{y};{Network.uuid_player}"
         Network.sendMessage(message)
         
-    def sendAllFoodRemove():    # {RemoveFood, ID}
-        message = f"RemoveAllFood;{Network.uuid_player}"
+    def sendRemoveAllFoods():    # {RemoveFood, ID}
+        message = f"RemoveAllFoods;{Network.uuid_player}"
         Network.sendMessage(message)
         
-    def sendAllBobsRemove():
-        message = f"RemoveAllBob;{Network.uuid_player}"
+    def sendRemoveAllBobs():
+        message = f"RemoveAllBobs;{Network.uuid_player}"
         Network.sendMessage(message)
 
 

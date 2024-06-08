@@ -745,7 +745,8 @@ class Grid:
             return
 
         # Remove all food from the grid
-        self.removeAllEdibles()
+        self.removeAllEdibles(Network.uuid_player)
+        Network.sendRemoveAllFoods(Network.uuid_player)
 
         # Spawn food
         self.spawnFood()
@@ -789,12 +790,15 @@ class Grid:
         bob = self.findEntityById(uuid.UUID(message[0]))
 
         if bob is not None:
+            print("bob trouvé")
             # On met à jour l'énergie du bob
             bob.energy = int(float(message[3]))
 
             # Si le bob s'est déplacé, on met à jour sa position
             if message[1] is not None:
-                self.moveBobTo(bob, message[1], message[2])
+                self.moveBobTo(bob, int(float(message[1])), int(float(message[2])), noMessage=True)
+        else:
+            print("bob non trouvé")
 
 
     
