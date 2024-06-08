@@ -626,11 +626,14 @@ class Grid:
 
 
     # Delete all food in the grid
-    def removeAllEdibles(self):
+    def removeAllEdibles(self, jobProperty ):
         """
         This method removes all Food objects from the grid.
         It iterates over the grid dictionary and removes all Food objects from each cell.
         If a cell is now empty, it is removed from the grid dictionary.
+        
+        Parameters:
+        jobProperty (int): The jobProperty of the Food objects to be removed.
         """
         # Store the keys to remove in a list to avoid modifying the dictionary during iteration
         keysToRemove = []
@@ -638,7 +641,7 @@ class Grid:
         # Iterate over the grid dictionary
         for key, cell in self.gridDict.items():
             if (cell.edibleObject):
-                if cell.edibleObject.jobProperty == Network.uuid_player:
+                if cell.edibleObject.jobProperty == jobProperty:
                     cell.edibleObject = None
             # If the cell is empty, add its key to the list
             if cell.isEmpty():
@@ -649,10 +652,19 @@ class Grid:
             del self.gridDict[key]
 
     # Delete all bobs in the grid
-    def removeAllBobs(self):
+    def removeAllBobs(self, jobProperty):
+        """
+        This method removes all Bob objects from the grid.
+        It iterates over the grid dictionary and removes all Bob objects from each cell.
+        If a cell is now empty, it is removed from the grid dictionary.
+        
+        Parameters:
+        jobProperty (int): The jobProperty of the Bob objects to be removed.
+        
+        """
         keysToRemove = []
         for key, cell in self.gridDict.items():
-            cell.bobs = [b for b in cell.bobs if b.jobProperty != Network.uuid_player]
+            cell.bobs = [b for b in cell.bobs if b.jobProperty != jobProperty]
             if cell.isEmpty():
                 keysToRemove.append(key)
         for key in keysToRemove:

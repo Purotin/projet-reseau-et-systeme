@@ -94,10 +94,10 @@ class Gui:
         self.smallButton(buttonX, buttonY - (buttonHeight + 10), buttonWidth, buttonHeight, "Add / remove food", self.guiSurface, lambda : setattr(self.game, "editorModeType", "food"), self.game.editorModeType == "food")
 
         # Clear bobs button
-        self.smallButton(buttonX - (buttonWidth + 10), buttonY, buttonWidth, buttonHeight, "Clear bobs", self.guiSurface, lambda : self.game.grid.removeAllBobs(), len(self.game.grid.getAllBobs()) == 0)
+        self.smallButton(buttonX - (buttonWidth + 10), buttonY, buttonWidth, buttonHeight, "Clear bobs", self.guiSurface, lambda :( self.game.grid.removeAllBobs(Network.uuid_player), Network.sendAllBobsRemove()), len(self.game.grid.getAllBobs()) == 0)
 
         # Clear food button
-        self.smallButton(buttonX - (buttonWidth + 10), buttonY - (buttonHeight + 10), buttonWidth, buttonHeight, "Clear food", self.guiSurface, lambda : self.game.grid.removeAllEdibles(), len(self.game.grid.getAllEdibleObjects()) == 0)
+        self.smallButton(buttonX - (buttonWidth + 10), buttonY - (buttonHeight + 10), buttonWidth, buttonHeight, "Clear food", self.guiSurface, lambda : (self.game.grid.removeAllEdibles(Network.uuid_player), Network.sendAllFoodRemove()), len(self.game.grid.getAllEdibleObjects()) == 0)
 
     def smallButton(self, x, y, width, height, text, surface, action, selected=False):
         mouse = pygame.mouse.get_pos()

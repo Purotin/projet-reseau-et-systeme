@@ -269,6 +269,12 @@ class Network:
                     
                 case "RemoveBob":
                     Network.grid.removeAllBobsAt(message[1], message[2], message[3])
+                    
+                case "RemoveAllFood":
+                    Network.grid.removeAllFood(message[1])
+                
+                case "RemoveAllBob":
+                    Network.grid.removeAllBobs(message[1])
         
     
     
@@ -285,6 +291,7 @@ class Network:
         """
         length = str(len(message))
         mess = "{"+length+";"+message+"}"
+        print("Sent message : ", mess)
         Network.pipes.send(mess)
         
     def sendNewBob(bob):        # {NewBob;X;Y;totalVelocity;mass;energy;perception;memorySize;maxAmmos;ID;Nproperty;Jproperty}
@@ -334,6 +341,14 @@ class Network:
         
     def sendAllBobRemoveAt(x,y):     # {RemoveBob;X;Y;ID}    
         message = f"RemoveBob;{x};{y};{Network.uuid_player}"
+        Network.sendMessage(message)
+        
+    def sendAllFoodRemove():    # {RemoveFood, ID}
+        message = f"RemoveAllFood;{Network.uuid_player}"
+        Network.sendMessage(message)
+        
+    def sendAllBobsRemove():
+        message = f"RemoveAllBob;{Network.uuid_player}"
         Network.sendMessage(message)
 
 
