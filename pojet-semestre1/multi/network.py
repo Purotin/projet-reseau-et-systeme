@@ -294,7 +294,7 @@ class Network:
             # Envoie la nouvelle position du bob
             message = f"Bob;{bob.id};{bob.currentX};{bob.currentY};{bob.energy}"
 
-        elif bob.action == "eat" or bob.action == "parthenogenesis" or bob.action == "love":
+        elif bob.action in ["eat", "parthenogenesis", "love", "idle"]:
             # Envoie la nouvelle énergie du bob
             message = f"Bob;{bob.id};None;None;{bob.energy}"
 

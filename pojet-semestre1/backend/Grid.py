@@ -220,7 +220,7 @@ class Grid:
         self.addBob(b)
 
         # Send the new position to the network
-        if not noMessage:
+        if not noMessage and b.action == "move":
             Network.sendBobUpdate(b)
 
     # Add food at the position (x,y) in the grid
@@ -242,7 +242,7 @@ class Grid:
         self.gridDict[(edible.x, edible.y)].addEdible(edible)
     
     # Remove food at the position (x,y) in the grid
-    def removeFoodAt(self,x,y):
+    def removeFoodAt(self,x,y, jobProperty = None):
         """
         This method removes a Food object from the grid.
 
@@ -791,6 +791,9 @@ class Grid:
         Parameters:
         message (list): A list containing the message data.
         """
+        if not self.getCellAt(message[1], message[2]):
+            self.gridDict[(message[1], message[2])] = Cell(message[1], message[2])
+
         # Retrieve the Food object from the grid based on the message
         food = self.getCellAt(message[1], message[2]).edibleObject
         if food.id != message[0]:

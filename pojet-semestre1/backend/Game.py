@@ -308,7 +308,8 @@ class Game:
                             self.grid.removeAllBobsAt(*self.editorModeCoords)
                         elif self.editorModeType == "food":
                             self.grid.removeFoodAt(*self.editorModeCoords)
-
+                            
+                            
                 if event.type == pygame.MOUSEBUTTONDOWN:
 
                     if self.editorModeCoords is None:
@@ -316,11 +317,15 @@ class Game:
 
                     if event.button == 1:
                         if self.editorModeType == "bob":
-                            self.grid.addBob(Bob(self.editorModeCoords[0], self.editorModeCoords[1]))
+                            bob = Bob(self.editorModeCoords[0], self.editorModeCoords[1])
+                            Network.sendNewBob(bob)
+                            self.grid.addBob(bob)
+                            
                         elif self.editorModeType == "food":
-                            self.grid.addEdible(Food(self.editorModeCoords[0], self.editorModeCoords[1]))
+                            food = Food(self.editorModeCoords[0], self.editorModeCoords[1])
+                            Network.sendNewFood(food)
+                            self.grid.addEdible(food)
 
-                        print(f'Adding {self.editorModeType} at {self.editorModeCoords}')
                     if event.button == 3:
 
                         if self.editorModeType == "bob":
@@ -328,7 +333,6 @@ class Game:
                         elif self.editorModeType == "food":
                             self.grid.removeFoodAt(*self.editorModeCoords)
 
-                        print(f'Removing {self.editorModeType} at {self.editorModeCoords}')
                     
             if event.type == pygame.VIDEORESIZE:
                 # There's some code to add back window content here.
