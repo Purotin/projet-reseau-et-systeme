@@ -162,15 +162,20 @@ class Cell:
                             self.removeBob(otherBob.id)
                             # Set the actions of the two Bob objects
                             bob.action = "eat"
-                            otherBob.action = "eaten"
-
-                            # print("cannibalism")
-
                             # The Bob can only eat once per tick so we break the loop
                             break  
                 
                 # If the Bob has not eaten yet, make it eat the edible object if there is one in the cell
-                if self.edibleObject is not None:
+                if self.edibleObject is not None and bob.action == "idle":
+                    
+                    # On demande la propriété réseau de l'objet comestible
+                    if self.edibleObject.networkProperty != Network.uuid_player:
+                        Network.requestNetworkProperty(self.edibleObject.id)
+
+                        # On supprime l'objet comestible s'il n'a pas été trouvé par le détenteur de la propriété réseau
+                        if Network.timeout(5, Network.recvNetworkProperty, self.edibleObject.id) == -1:
+                            self.edibleObject = None
+                            continue
                     self.eat(bob, self.edibleObject)
 
     # Split a bob into two bobs, (reproduction by parthenogenesis)
@@ -214,8 +219,11 @@ class Cell:
 
         # Si l'autre bob appartient à un autre joueur
         if b2.networkProperty != Network.uuid_player:
+
             # On demande sa propriété réseau
             Network.requestNetworkProperty(b2.id)
+
+            # On supprime le bob s'il n'a pas été trouvé par le détenteur de la propriété réseau
             if Network.timeout(5,Network.recvNetworkProperty) == -1:
                 self.removeBob(b2.id)
                 return
