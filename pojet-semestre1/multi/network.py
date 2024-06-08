@@ -91,7 +91,7 @@ class Network:
                 obj["networkProperty"] = uuid.UUID(data[3])
                 obj["x"] = float(data[4])
                 obj["y"] = float(data[5])
-                obj["energy"] = int(data[6])
+                obj["energy"] = int(float(data[6]))
                 
                 if data[0] == "bob":
                     obj["mass"] = int(data[7])
@@ -260,6 +260,15 @@ class Network:
 
                 case "NewFood":
                     Network.grid.addFoodFromMessage(message[1:])
+                
+                case "Disconnect":
+                    pass
+                
+                case "RemoveFood":
+                    Network.grid.removeFoodAt(message[1], message[2], message[3])
+                    
+                case "RemoveBob":
+                    Network.grid.removeAllBobsAt(message[1], message[2], message[3])
         
     
     
@@ -317,6 +326,14 @@ class Network:
         
         # Envoie la nouvelle valeur de la nourriture
         message = f"Food;{food.id};None;None;{food.value}"
+        Network.sendMessage(message)
+        
+    def sendFoodRemoveAt(x,y):   #  {RemoveFood;X;Y;ID}
+        message = f"RemoveFood;{x};{y};{Network.uuid_player}"
+        Network.sendMessage(message)
+        
+    def sendAllBobRemoveAt(x,y):     # {RemoveBob;X;Y;ID}    
+        message = f"RemoveBob;{x};{y};{Network.uuid_player}"
         Network.sendMessage(message)
 
 

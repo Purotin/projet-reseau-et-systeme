@@ -770,30 +770,21 @@ class Grid:
         Explainations:
         The received message lookes like {Bob;bob_id;X;Y;energy}
         """
-        # Retrieve the Bob object from the grid based on the message
+
+        print(message)
+
+        # On rècupère le bob à partir de son ID
+        bob = self.findEntityById(uuid.UUID(message[0]))
+
+        if bob is not None:
+            # On met à jour l'énergie du bob
+            bob.energy = int(float(message[3]))
+
+            # Si le bob s'est déplacé, on met à jour sa position
+            if message[1] is not None:
+                self.moveBobTo(bob, message[1], message[2])
 
 
-        bob = None
-        bobs = self.getBobsAt(message[2], message[3])
-    
-        for b in bobs:
-            if b.id == message[1]:
-                bob = b
-                break
-        if bob is None:
-            return None
-        
-        # Bob moved
-        if message[3] is not None:    
-            # Move the bob
-            self.moveBobTo(bob, message[2], message[3], True)
-
-        # Bob ate another bob or food
-        else:
-            # Update its energy
-            bob.energy = message[4]
-        
-        return 0
     
     def updateFood(self, message):
         """
@@ -804,8 +795,12 @@ class Grid:
         Parameters:
         message (list): A list containing the message data.
         """
+        message[1] = float(message[2])
+        message[2] = float(message[2])
+        message[3] = float(message[2])
+
         if not self.getCellAt(message[1], message[2]):
-            self.gridDict[(message[1], message[2])] = Cell(message[1], message[2])
+            self.gridDict[message[1], message[2]] = Cell(message[1], message[2])
 
         # Retrieve the Food object from the grid based on the message
         food = self.getCellAt(message[1], message[2]).edibleObject
