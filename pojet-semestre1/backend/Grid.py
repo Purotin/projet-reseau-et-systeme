@@ -182,7 +182,7 @@ class Grid:
             return
         
         # Else, remove it from the grid
-        cell.bobs = []
+        cell.bobs = [b for b in cell.bobs if b.jobProperty != Network.uuid_player]
 
         # Remove the cell from the dictionnary if it is now empty
         if cell.isEmpty():
@@ -256,10 +256,9 @@ class Grid:
         if not cell:
             return
         
-        if self.checkEntityInNProperty(cell.edibleObject.id): 
-            self.delEntityFromNProperty(cell.edibleObject.id)
         # Remove the food from the cell
-        cell.edibleObject = None
+        if cell.edibleObject.jobProperty == Network.uuid_player:
+            cell.edibleObject = None
 
 
     # Tick events
@@ -645,7 +644,7 @@ class Grid:
     def removeAllBobs(self):
         keysToRemove = []
         for key, cell in self.gridDict.items():
-            cell.bobs = []
+            cell.bobs = [b for b in cell.bobs if b.jobProperty != Network.uuid_player]
             if cell.isEmpty():
                 keysToRemove.append(key)
         for key in keysToRemove:

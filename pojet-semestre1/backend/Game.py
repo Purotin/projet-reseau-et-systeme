@@ -90,7 +90,7 @@ class Game:
             self.networkArgs = None
 
             # Création de la grille à partir de la taille donnée en argument du constructeur
-            grid = Grid(grid_size, 10, 0)
+            grid = Grid(grid_size, 0, 0)
 
         # ⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️ FIN DE LA CONNEXION AU RÉSEAU ⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️
 
@@ -295,13 +295,11 @@ class Game:
                     if event.buttons[0] == 1:
                         if self.editorModeType == "bob":
                             bob = Bob(self.editorModeCoords[0], self.editorModeCoords[1])
-                            if bob.jobProperty != Network.uuid_player:
-                                Network.sendNewBob(bob)
+                            Network.sendNewBob(bob)
                             self.grid.addBob(bob)
                         elif self.editorModeType == "food":
                             food = Food(self.editorModeCoords[0], self.editorModeCoords[1])
-                            if food.jobProperty != Network.uuid_player:
-                                Network.sendNewFood(food)
+                            Network.sendNewFood(food)
                             self.grid.addEdible(food)
                             
                             

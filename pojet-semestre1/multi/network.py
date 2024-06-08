@@ -278,42 +278,45 @@ class Network:
         mess = "{"+length+";"+message+"}"
         Network.pipes.send(mess)
         
-    def sendNewBob(bob):        # {newbob;X;Y;totalVelocity;mass;energy;perception;memorySize;maxAmmos;ID;Nproperty;Jproperty}
+    def sendNewBob(bob):        # {NewBob;X;Y;totalVelocity;mass;energy;perception;memorySize;maxAmmos;ID;Nproperty;Jproperty}
 
         message = "NewBob" + ";" + str(bob.id) + ";" + str(bob.currentX) + ";" + str(bob.currentY) + ";" + str(bob.mass) + ";" + str(bob.energy) + ";" + str(bob.networkProperty) + ";" + str(bob.jobProperty)
         Network.sendMessage(message)
 
-    def sendNewFood(food):      # {newfood;X;Y;value;ID;Nproperty;Jproperty}
+    def sendNewFood(food):      # {NewFood;X;Y;value;ID;Nproperty;Jproperty}
         
         message = "NewFood" + ";" + str(food.id) + ";" + str(food.x) + ";" + str(food.y) + ";" + str(food.value) + ";" + str(food.networkProperty) + ";" + str(food.jobProperty)
         Network.sendMessage(message)
 
-    def sendBobUpdate(bob):     # {bob;id;positionX;positionY;energy}
+    def sendBobUpdate(bob):     # {Bob;id;positionX;positionY;energy}
         
         if bob.action == "move":
             # Envoie la nouvelle position du bob
-            message = f"bob;{bob.id};{bob.current_X};{bob.current_Y};{bob.energy}"
+            message = f"Bob;{bob.id};{bob.currentX};{bob.currentY};{bob.energy}"
 
         elif bob.action == "eat" or bob.action == "parthenogenesis" or bob.action == "love":
             # Envoie la nouvelle énergie du bob
-            message = f"bob;{bob.id};None;None;{bob.energy}"
+            message = f"Bob;{bob.id};None;None;{bob.energy}"
 
         elif bob.action == "eaten":
             # Met l'énergie du bob à 0
-            message = f"bob;{bob.id};None;None;0"
+            message = f"Bob;{bob.id};None;None;0"
+
+        else:
+            print(bob.action)
 
         Network.sendMessage(message)
     
-    def sendFoodCreation(food): # {newfood;positionX;positionY;value;ID;Nproperty;Jproperty}
+    def sendFoodCreation(food): # {NewFood;positionX;positionY;value;ID;Nproperty;Jproperty}
         
         # Envoie la position et la valeur de la nourriture
         message = f"NewFood;{food.x};{food.y};{food.value};{food.id};{food.networkProperty};{food.jobProperty}"
         Network.sendMessage(message)
 
-    def sendFoodUpdate(food):   # {food;id;positionX;positionY;NewValue}
+    def sendFoodUpdate(food):   # {Food;id;positionX;positionY;NewValue}
         
         # Envoie la nouvelle valeur de la nourriture
-        message = f"food;{food.id};None;None;{food.value}"
+        message = f"Food;{food.id};None;None;{food.value}"
         Network.sendMessage(message)
 
 

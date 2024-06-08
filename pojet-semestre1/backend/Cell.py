@@ -113,8 +113,7 @@ class Cell:
             # Set the action of the Bob object to "eat"
             b.action = "eat"
 
-        food_changes = Grid.makeMessage(edibleObject)
-        Network.sendMessage(food_changes)
+        Network.sendFoodUpdate(edibleObject)
 
     # Make all bobs in the cell eat food or a prey if they are able to
     def feedCellBobs(self):
