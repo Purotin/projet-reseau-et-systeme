@@ -18,7 +18,6 @@ class Grid:
             self.sausageCount = sausageCount
         self.dayCount = 0
          
-
     # Check that the grid is made of cells and that the values are Bob or Food objects
     def verifyGrid(self):
         for key,value in self.gridDict.items():
@@ -128,6 +127,7 @@ class Grid:
         return distance
 
 
+
     # Grid data manipulation methods
 
 
@@ -211,7 +211,7 @@ class Grid:
         noMessage (bool): A boolean indicating whether to send a message to the network. Defaults to False.
         """
         # If the position is the same as the bob's current position, set its action to idle
-        if (b.currentX, b.currentY) == (x, y):
+        if (b.currentX, b.currentY) == (x, y) or noMessage:
             b.action = "idle"
         # Else, set its action to move
         else:
@@ -745,8 +745,8 @@ class Grid:
             return
 
         # Remove all food from the grid
-        self.removeAllEdibles(Network.uuid_player)
-        Network.sendRemoveAllFoods(Network.uuid_player)
+        self.removeAllEdibles()
+        Network.sendRemoveAllFoods()
 
         # Spawn food
         self.spawnFood()

@@ -67,7 +67,7 @@ class Network:
             if message[0] == "ConnectionResponse" and message[1] == str(Network.uuid_player):
                 return message
             else:
-                Network.messageBuffer += "{"+length+";"+message+"}"
+                Network.messageBuffer += "{"+str(length)+";"+message+"}"
         return None
      
     def processConnectionResponse(message):
@@ -178,6 +178,7 @@ class Network:
         # On cherche un message de type {NetworkPropertyResponse;player_id;obj_id}
         for message in messageList:
             length = len(message)
+            string_message = message
             message = message.split(";")
             # Si le message est une réponse de connexion et que la réponse est pour moi
             if message[0] == "NetworkPropertyResponse" and message[1] == str(Network.uuid_player):
@@ -190,7 +191,7 @@ class Network:
             # On ignore les messages qui concernent l'objet pour lequel on a la propriété réseau
             # ex : ignorer Déplacement bob : {bob;id;last_X;last_Y;positionX;positionY;None;}
             elif (message[1] !=str(obj_id)):
-                Network.messageBuffer += "{"+length+";"+message+"}"
+                Network.messageBuffer += "{"+str(length)+";"+string_message+"}"
                 
      
 
@@ -339,11 +340,11 @@ class Network:
         message = f"Food;{food.id};None;None;{food.value}"
         Network.sendMessage(message)
         
-    def sendFoodRemoveAt(x,y):   #  {RemoveFood;X;Y;ID}
+    def sendRemoveFoodAt(x,y):   #  {RemoveFood;X;Y;ID}
         message = f"RemoveFood;{x};{y};{Network.uuid_player}"
         Network.sendMessage(message)
         
-    def sendAllBobRemoveAt(x,y):     # {RemoveBob;X;Y;ID}    
+    def sendRemoveAllBobsAt(x,y):     # {RemoveBob;X;Y;ID}    
         message = f"RemoveBob;{x};{y};{Network.uuid_player}"
         Network.sendMessage(message)
         
