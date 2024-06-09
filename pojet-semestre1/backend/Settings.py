@@ -71,13 +71,13 @@ class Settings:
 
     #--------------------------------------------VELOCITY--------------------------------------------
 
-    spawnVelocity = 1 # the velocity a bob starts at it spawns in the game
+    spawnVelocity = 2 # the velocity a bob starts at it spawns in the game
 
     minVelocity = 0 # the minimal velocity for any bob
 
     #----------------------------------------------MASS----------------------------------------------
 
-    spawnMass = 1 # the mass a bob starts at when spawner by the game
+    spawnMass = 2 # the mass a bob starts at when spawner by the game
 
     minMass = 1 # the minimal mass for any bob
 

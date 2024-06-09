@@ -143,8 +143,7 @@ class Game:
         # Game loop
         while self.running:
             # GESTION DES DONNÉES RÉSEAU REÇUES
-
-
+            Network.sendMessagesBuffer()
             Network.processMessages()
 
 
@@ -161,7 +160,7 @@ class Game:
             if not self.paused:
                 # Vérifier si suffisamment de temps s'est écoulé depuis le dernier tick
                 current_time = pygame.time.get_ticks()
-                if current_time - last_tick_time >= 1000 / Settings.maxTps:
+                if current_time - last_tick_time >= 5000 / Settings.maxTps:
                     # Mettre à jour le temps du dernier tick
                     last_tick_time = current_time
 
@@ -179,7 +178,7 @@ class Game:
                         self.bestBobGenerationHistory.append(self.currentBestBob.generation)
                     
                 # Calculate alpha, the percentage of the tick that has passed
-                alpha = (pygame.time.get_ticks() - last_tick_time) / (1000 / Settings.maxTps)
+                alpha = (pygame.time.get_ticks() - last_tick_time) / (5000 / Settings.maxTps)
 
             if self.noInterface:
                 bobCount = len(self.grid.getAllBobs())

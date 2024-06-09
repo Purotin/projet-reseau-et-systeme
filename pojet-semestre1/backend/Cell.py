@@ -152,14 +152,13 @@ class Cell:
                                 if Network.timeout(5, Network.recvNetworkProperty, otherBob.id) == -1:
                                     self.removeBob(otherBob.id)
                                     continue
-
-                            if otherBob.networkProperty == Network.uuid_player:
-                                continue
  
                             # The Bob consumes the energy of the other Bob object
                             bob.energy = min(bob.energyMax, otherBobEnergy * .5 * (1 - massRatio))
                             # The other Bob's energy is reduced
-                            self.removeBob(otherBob.id)
+                            otherBob.energy = 0
+                            Network.sendBobUpdate(otherBob)
+                            otherBob.action = "eaten"
                             # Set the actions of the two Bob objects
                             bob.action = "eat"
                             # The Bob can only eat once per tick so we break the loop
@@ -311,6 +310,6 @@ class Cell:
 
         for bob in self.bobs:
             # If a Bob object's energy reaches zero, it is removed from the cell
-            if bob.action == "decay":
+            if bob.action == "decay" or bob.action == "eaten":
                 self.removeBob(bob.id)
 

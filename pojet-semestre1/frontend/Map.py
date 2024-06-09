@@ -461,7 +461,11 @@ class Map:
         # Else if the edible is a Sausage, choose the sausage sprite
         elif isinstance(edible, Sausage):
             foodSprite = self.edibleAssets["sausage"]
-
+            
+        #highlight the edible
+        if edible.jobProperty == Network.uuid_player:
+            foodSprite = foodSprite.copy()
+            foodSprite.fill((60,40,120), special_flags=pygame.BLEND_ADD)
         # Scale the sprite based on the tile size
         foodSprite = pygame.transform.scale(foodSprite, (int(tileTotalWidthOriginal * self.scaleMultiplier), int(tileTotalHeightOriginal * self.scaleMultiplier)))
 

@@ -793,25 +793,17 @@ class Grid:
         Explainations:
         The received message lookes like {Bob;bob_id;X;Y;energy}
         """
-
-        print(message)
-
         # On rècupère le bob à partir de son ID
         bob = self.findEntityById(uuid.UUID(message[0]))
 
         if bob is not None:
-            print("bob trouvé")
             # On met à jour l'énergie du bob
             bob.energy = int(float(message[3]))
 
             # Si le bob s'est déplacé, on met à jour sa position
             if message[1] != "None":
                 self.moveBobTo(bob, int(float(message[1])), int(float(message[2])), noMessage=True)
-        else:
-            print("bob non trouvé")
 
-
-    
     def updateFood(self, message):
         """
         This method updates a Food object based on a message received from the network.

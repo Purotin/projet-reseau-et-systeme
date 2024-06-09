@@ -10,7 +10,8 @@ class Network:
 
     uuid_player = uuid.uuid4()
     grid = None
-    messageBuffer = ""
+    recvMessageBuffer = ""
+    messagesBuffer = ""
 
     def __init__(self):
         print("Network initialized")
@@ -35,7 +36,7 @@ class Network:
         # Envoyer la requête de connexion
         strUuid = str(Network.uuid_player)
         Network.pipes = PipeHandler()
-        Network.sendMessage("ConnectionRequest;"+strUuid)
+        Network.sendDirectMessage("ConnectionRequest;"+strUuid)
    
     def processConnectionRequest(message):
         """ Traite la requête de connexion à la partie en cours
@@ -139,7 +140,7 @@ class Network:
     def requestNetworkProperty(entityId):
         # Broadcast for Nproperty
         message = "NetworkPropertyRequest;"+str(Network.uuid_player) + ";" + str(entityId)
-        Network.sendMessage(message)
+        Network.sendDirectMessage(message)
    
     def processNetworkPropertyRequest(message):
         """ Traite la requête de propriété réseau
@@ -175,7 +176,7 @@ class Network:
             Cette fonction est appelée par la fonction timeout pour attendre la réponse de la connexion
             - Elle parcourt les messages reçus
             - Si le message est une réponse de connexion et que la réponse est pour moi, on met à jour la propriété réseau de l'objet
-            - On place les autres messages dans messageBuffer
+            - On place les autres messages dans recvMessageBuffer
         """     
         messageList = Network.processBuffer()
         
@@ -200,7 +201,7 @@ class Network:
             # On ignore les messages qui concernent l'objet pour lequel on a la propriété réseau
             # ex : ignorer Déplacement bob : {bob;id;last_X;last_Y;positionX;positionY;None;}
             elif (message[1] !=str(obj_id)):
-                Network.messageBuffer += "{"+str(length)+";"+string_message+"}"
+                Network.recvMessageBuffer += "{"+str(length)+";"+string_message+"}"
      
 
     # ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️ GESTION DES MESSAGES ENTRANTS ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️
@@ -211,12 +212,12 @@ class Network:
         """ Traiter les messages reçus
 
         Explications :
-            Cette fonction parcourt les messages reçus et ceux qui sont dans le messageBuffer
+            Cette fonction parcourt les messages reçus et ceux qui sont dans le recvMessageBuffer
     
         """
-        buffer = Network.messageBuffer
+        buffer = Network.recvMessageBuffer
         messageList = []
-        for i in range(20):
+        for i in range(1000):
             buffer += Network.pipes.recv()
 
 
@@ -297,15 +298,35 @@ class Network:
     
     def sendMessage(message):
         """
-            Envoie un message à la connexion
+            Ajoute le message au buffer de messages à envoyer
             ajoute la taille du message au début du message
             message : le message à envoyer
         
         """
         length = str(len(message))
         mess = "{"+length+";"+message+"}"
-        print("Sent message : ", mess)
+        # print("Sent message : ", mess)
+        Network.messagesBuffer += mess
+        # Network.pipes.send(mess)
+        
+    def sendDirectMessage(message):
+        """
+            Envoie un message directement
+            message : le message à envoyer
+        """
+        length = str(len(message))
+        mess = "{"+length+";"+message+"}"
+        print("Sent direct message : ", mess)
         Network.pipes.send(mess)
+        
+    def sendMessagesBuffer():
+        """
+            Envoie tous les messages dans le buffer si le buffer n'est pas vide
+        """
+        if Network.messagesBuffer != "":    
+            Network.pipes.send(Network.messagesBuffer)
+            print("Sent messages : ", Network.messagesBuffer)
+            Network.messagesBuffer = ""
         
     def sendNewBob(bob):        # {NewBob;X;Y;totalVelocity;mass;energy;perception;memorySize;maxAmmos;ID;Nproperty;Jproperty}
 
