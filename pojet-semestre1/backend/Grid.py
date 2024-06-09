@@ -619,6 +619,7 @@ class Grid:
 
             if b.energy <= 0 and b.action != "eaten":
                 b.action = "decay"
+                Network.sendBobUpdate(b)
 
         # Update the action of all foreign bobs
         foreignBobs = [b for b in self.getAllBobs() if b.jobProperty != Network.uuid_player]
@@ -626,7 +627,7 @@ class Grid:
             if b.action == "move":
                 b.lastX, b.lastY = b.currentX, b.currentY
                 b.action = "idle"
-            if b.energy <= 0 and b.action != "eaten":
+            if b.energy < 0.5 and b.action != "eaten":
                 b.action = "decay"
 
 
@@ -834,7 +835,7 @@ class Grid:
         food = self.getCellAt(message[0], message[1]).edibleObject
         
         # Update the food object
-        if message[2] == "0.0":
+        if message[2] == 0:
             self.removeFoodAt(message[0], message[1], food.jobProperty)
         else:
             food.value = message[2]

@@ -192,23 +192,29 @@ class Gui:
             tooltip = pygame.Surface((tooltipWidth, tooltipHeight), pygame.SRCALPHA)
             pygame.draw.rect(tooltip, (0,0,0,200), (0, 0, tooltipWidth, tooltipHeight), border_radius=10)
 
+            self.progressBar(10, 10, 280, 15, objs.value / 200, f"Energy: {int(objs.value)} / {200}", (194, 14, 14), tooltip)
+
+
             # id
             text = font.render(f"Food id:", True, (255,255,255))
-            tooltip.blit(text, (10, 10))
-            text = font.render(f"{objs.id}", True, (255,255,255))
             tooltip.blit(text, (10, 30))
+            text = font.render(f"{objs.id}", True, (255,255,255))
+            tooltip.blit(text, (10, 50))
 
             #network properties
             text = font.render(f"Food network properties:", True, (255,255,255))
-            tooltip.blit(text, (10, 50))
-            text = font.render(f"{objs.networkProperty}", True, (255,255,255))
             tooltip.blit(text, (10, 70))
+            text = font.render(f"{objs.networkProperty}", True, (255,255,255))
+            tooltip.blit(text, (10, 90))
 
             #job properties
             text = font.render(f"Food job properties:", True, (255,255,255))
-            tooltip.blit(text, (10, 90))
-            text = font.render(f"{objs.jobProperty}", True, (255,255,255))
             tooltip.blit(text, (10, 110))
+            text = font.render(f"{objs.jobProperty}", True, (255,255,255))
+            tooltip.blit(text, (10, 130))
+            
+            text = font.render(f"Food value: {objs.value}", True, (255,255,255))
+            tooltip.blit(text, (10, 130))
             
         else:
             tooltipWidth = 300

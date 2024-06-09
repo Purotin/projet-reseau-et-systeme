@@ -54,6 +54,7 @@ class Network:
         game_info = Network.grid.getGameInfo()
         reponse = "ConnectionResponse;"+message[1]+";"+strUuid+";"+game_info
         Network.sendMessage(reponse)
+        Network.game.paused = True
       
     def recvConnectionResponse():
         """
@@ -99,7 +100,9 @@ class Network:
                     dataDictionnary["bobs"].append(obj)
                 elif data[0] == "food":
                     dataDictionnary["foods"].append(obj)
-                
+
+        successMessage = "ConnectionSuccess;"+str(Network.uuid_player)
+        Network.sendMessage(successMessage)
         return dataDictionnary
 
     def disconnect():
@@ -282,6 +285,9 @@ class Network:
                 
                 case "RemoveAllBobs":
                     Network.grid.removeAllBobs(uuid.UUID(message[1]))
+
+                case "ConnectionSuccess":
+                    Network.game.paused = False
         
     
     
@@ -321,7 +327,7 @@ class Network:
             # Envoie la nouvelle énergie du bob
             message = f"Bob;{bob.id};None;None;{bob.energy}"
 
-        elif bob.action == "eaten":
+        elif bob.action == "eaten" or bob.action == "decay":
             # Met l'énergie du bob à 0
             message = f"Bob;{bob.id};None;None;0"
 

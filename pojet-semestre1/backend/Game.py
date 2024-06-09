@@ -61,6 +61,7 @@ class Game:
         # ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️ CONNEXION AU RÉSEAU ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️
 
         # Envoi de la requête de connexion à la partie en cours sur le réseau
+        
         Network.requestConnection("239.0.0.1", "1234")
     
         first_connection = True
@@ -74,20 +75,19 @@ class Game:
         # Si la réponse de connexion est reçue
         if not first_connection:
             print("ConnectionResponse received a game is already running, you are connected to it")
-            self.networkArgs = Network.processConnectionResponse(message)
+            networkArgs = Network.processConnectionResponse(message)
 
             # Création de la grille à partir des données reçues
-            grid = Grid(self.networkArgs["gridSize"], 0, 0)
-            for bob in self.networkArgs["bobs"]:
+            grid = Grid(networkArgs["gridSize"], 0, 0)
+            for bob in networkArgs["bobs"]:
                 grid.addBob(Bob(x=bob["x"], y=bob["y"], ID=bob["id"], mass=bob["mass"], energy=bob["energy"], Nproperty=bob["networkProperty"], Jproperty=bob["jobProperty"]))
         
-            for food in self.networkArgs["foods"]:
+            for food in networkArgs["foods"]:
                 grid.addEdible(Food(x=food["x"], y=food["y"], ID=food["id"], energy=food["energy"], Nproperty=food["networkProperty"], Jproperty=food["jobProperty"]))
             
         # Si la réponse de connexion n'est pas reçue
         else:
             print("you are the first player, creating a new game")
-            self.networkArgs = None
 
             # Création de la grille à partir de la taille donnée en argument du constructeur
             grid = Grid(grid_size, 0, 0)
@@ -113,6 +113,7 @@ class Game:
             self.loadSaveFile(grid)
 
         Network.grid = self.grid
+        Network.game = self
         
     # main loop
     def run(self):
