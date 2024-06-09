@@ -192,12 +192,12 @@ class Network:
                 # On met à jour la propriété réseau de l'objet
                 entity = Network.grid.findEntityById(uuid.UUID(message[2]))
                 entity.networkProperty = Network.uuid_player
+                return 0
             
             # On ignore les messages qui concernent l'objet pour lequel on a la propriété réseau
             # ex : ignorer Déplacement bob : {bob;id;last_X;last_Y;positionX;positionY;None;}
             elif (message[1] !=str(obj_id)):
                 Network.messageBuffer += "{"+str(length)+";"+string_message+"}"
-                
      
 
     # ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️ GESTION DES MESSAGES ENTRANTS ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️
@@ -254,9 +254,6 @@ class Network:
 
                 case "NetworkPropertyRequest":
                     Network.processNetworkPropertyRequest(message)
-
-                case "NetworkPropertyResponse":
-                    Network.processNetworkPropertyResponse(message)
 
                 case "Bob":
                     Network.grid.updateBob(message[1:])

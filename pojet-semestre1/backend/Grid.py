@@ -626,6 +626,8 @@ class Grid:
             if b.action == "move":
                 b.lastX, b.lastY = b.currentX, b.currentY
                 b.action = "idle"
+            if b.energy <= 0 and b.action != "eaten":
+                b.action = "decay"
 
 
 
@@ -802,7 +804,7 @@ class Grid:
             bob.energy = int(float(message[3]))
 
             # Si le bob s'est déplacé, on met à jour sa position
-            if message[1] is not None:
+            if message[1] != "None":
                 self.moveBobTo(bob, int(float(message[1])), int(float(message[2])), noMessage=True)
         else:
             print("bob non trouvé")
@@ -832,7 +834,7 @@ class Grid:
         food = self.getCellAt(message[0], message[1]).edibleObject
         
         # Update the food object
-        if message[3] == "0":
+        if message[2] == "0.0":
             self.removeFoodAt(message[0], message[1], food.jobProperty)
         else:
             food.value = message[2]

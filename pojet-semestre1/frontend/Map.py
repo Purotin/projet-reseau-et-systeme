@@ -10,6 +10,7 @@ import noise
 from backend.Settings import *
 from backend.Edible import *
 from backend.Effect import *
+from multi.network import Network
 from frontend.frontendConstantes import *
 from frontend.Projectiles import Spittle
 
@@ -349,6 +350,9 @@ class Map:
 
         if Settings.computeColorSprite:
             b.sprite.applyColor()
+            
+        if b.jobProperty == Network.uuid_player:
+            b.sprite.highlight()
 
         # Adjust the screen coordinates to center the bob on the tile
         xScreen += (tileTotalWidthOriginal * self.scaleMultiplier) / 2 - b.sprite.image.get_width() / 2

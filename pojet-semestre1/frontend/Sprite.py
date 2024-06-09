@@ -101,6 +101,12 @@ class BobSprite(Sprite):
 
         # Set the image
         self.image = image
+        
+    
+    def highlight(self):
+        image = self.image.copy()
+        image.fill((90,70,150), special_flags=pygame.BLEND_ADD)
+        self.image = image
 
     
     def calculateColor(self):
