@@ -817,21 +817,26 @@ class Grid:
 
         Parameters:
         message (list): A list containing the message data.
-        """
-        message[1] = float(message[2])
-        message[2] = float(message[2])
-        message[3] = float(message[2])
 
-        if not self.getCellAt(message[1], message[2]):
-            self.gridDict[message[1], message[2]] = Cell(message[1], message[2])
+        Explainations:
+        The received message lookes like {X;Y;value}
+        """
+        message[0] = float(message[0])
+        message[1] = float(message[1])
+        message[2] = float(message[2])
+
+        if not self.getCellAt(message[0], message[1]):
+            self.gridDict[message[0], message[1]] = Cell(message[0], message[1])
 
         # Retrieve the Food object from the grid based on the message
-        food = self.getCellAt(message[1], message[2]).edibleObject
-        if food.id != message[0]:
-            return None
+        food = self.getCellAt(message[0], message[1]).edibleObject
         
         # Update the food object
-        food.value = message[3]
+        if message[3] == "0":
+            self.removeFoodAt(message[0], message[1], food.jobProperty)
+        else:
+            food.value = message[2]
+            
         return 0
 
     def addBobFromMessage(self, message):

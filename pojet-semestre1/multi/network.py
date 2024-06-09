@@ -66,8 +66,6 @@ class Network:
             message = message.split(";")
             if message[0] == "ConnectionResponse" and message[1] == str(Network.uuid_player):
                 return message
-            else:
-                Network.messageBuffer += "{"+str(length)+";"+message+"}"
         return None
      
     def processConnectionResponse(message):
@@ -137,7 +135,7 @@ class Network:
 
     def requestNetworkProperty(entityId):
         # Broadcast for Nproperty
-        message = "NetworkPropertyRequest;"+Network.uuid_player + ";" + entityId
+        message = "NetworkPropertyRequest;"+str(Network.uuid_player) + ";" + str(entityId)
         Network.sendMessage(message)
    
     def processNetworkPropertyRequest(message):
@@ -153,13 +151,13 @@ class Network:
         # message[1] : player_id
         # message[2] : obj_id
     
-        entity = Network.grid.findEntityById(message[2])
+        entity = Network.grid.findEntityById(uuid.UUID(message[2]))
 
         if entity is None:
             response = "NetworkPropertyResponse;"+ message[1] + ";None"
             Network.sendMessage(response)
 
-        if entity.networkProperty == Network.uuid_player:
+        elif entity.networkProperty == Network.uuid_player:
             response = "NetworkPropertyResponse;"+ message[1] + ";" + message[2]
             Network.sendMessage(response)
             entity.networkProperty = message[1]
@@ -192,7 +190,7 @@ class Network:
                     return -1
 
                 # On met à jour la propriété réseau de l'objet
-                entity = Network.grid.findEntityById(message[2])
+                entity = Network.grid.findEntityById(uuid.UUID(message[2]))
                 entity.networkProperty = Network.uuid_player
             
             # On ignore les messages qui concernent l'objet pour lequel on a la propriété réseau
@@ -344,7 +342,7 @@ class Network:
     def sendFoodUpdate(food):   # {Food;id;positionX;positionY;NewValue}
         
         # Envoie la nouvelle valeur de la nourriture
-        message = f"Food;{food.id};None;None;{food.value}"
+        message = f"Food;{food.x};{food.y};{food.value}"
         Network.sendMessage(message)
         
     def sendRemoveFoodAt(x,y):   #  {RemoveFood;X;Y;ID}
