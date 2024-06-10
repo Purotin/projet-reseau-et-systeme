@@ -292,6 +292,9 @@ class Network:
                 case "ConnectionSuccess":
                     if Network.game.wasPaused == True:
                         Network.game.paused = False
+                
+                case "ForceRemoveEntity":
+                    Network.grid.forceRemoveEntity(uuid.UUID(message[1]))
         
     
     
@@ -367,7 +370,6 @@ class Network:
         Network.sendMessage(message)
 
     def sendFoodUpdate(food):   # {Food;id;positionX;positionY;NewValue}
-        
         # Envoie la nouvelle valeur de la nourriture
         message = f"Food;{food.x};{food.y};{food.value}"
         Network.sendMessage(message)
@@ -386,6 +388,10 @@ class Network:
         
     def sendRemoveAllBobs():
         message = f"RemoveAllBobs;{Network.uuid_player}"
+        Network.sendMessage(message)
+        
+    def sendForceRemoveEntity(entity):
+        message = f"ForceRemoveEntity;{entity.id}"
         Network.sendMessage(message)
 
 

@@ -101,6 +101,7 @@ class Cell:
             b.energy = min(b.energyMax, bobEnergy + edibleObject.value)
             edibleObject.value -= b.energy - bobEnergy
             if edibleObject.value <= 1e-5:
+                Network.sendForceRemoveEntity(self.edibleObject.id)
                 self.edibleObject = None
             # Set the action of the Bob object to "eat"
             b.action = "eat"
@@ -109,9 +110,11 @@ class Cell:
         elif isinstance(edibleObject, Sausage):
             # The Bob object consumes the sausage
             b.ammos = min(b.maxAmmos, b.ammos + edibleObject.value)
+            Network.sendForceRemoveEntity(self.edibleObject.id)
             self.edibleObject = None
             # Set the action of the Bob object to "eat"
             b.action = "eat"
+
 
         Network.sendFoodUpdate(edibleObject)
 
@@ -155,9 +158,9 @@ class Cell:
  
                             # The Bob consumes the energy of the other Bob object
                             bob.energy = min(bob.energyMax, otherBobEnergy * .5 * (1 - massRatio))
-                            # The other Bob's energy is reduced
-                            otherBob.energy = 0
-                            Network.sendBobUpdate(otherBob)
+
+                            # The other Bob is removed
+                            Network.sendForceRemoveEntity(otherBob.id)
                             otherBob.action = "eaten"
                             # Set the actions of the two Bob objects
                             bob.action = "eat"

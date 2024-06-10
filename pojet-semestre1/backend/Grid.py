@@ -834,6 +834,20 @@ class Grid:
             
         return 0
 
+    def forceRemoveEntity(self, ID):
+        """
+        This method removes an entity from the grid based on its ID.
+
+        Parameters:
+        ID (int): The ID of the entity to be removed.
+        """
+        entity = self.findEntityById(ID)
+        if entity is not None:
+            if isinstance(entity, Bob):
+                self.removeBob(ID, entity.currentX, entity.currentY)
+            else:
+                self.removeFoodAt(entity.x, entity.y, entity.jobProperty)
+
     def addBobFromMessage(self, message):
         """
         This method adds a Bob object to the grid based on a message received from the network.
