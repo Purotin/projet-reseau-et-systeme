@@ -192,7 +192,7 @@ class Gui:
             tooltip = pygame.Surface((tooltipWidth, tooltipHeight), pygame.SRCALPHA)
             pygame.draw.rect(tooltip, (0,0,0,200), (0, 0, tooltipWidth, tooltipHeight), border_radius=10)
 
-            self.progressBar(10, 10, 280, 15, objs.value / 200, f"Energy: {int(objs.value)} / {200}", (194, 14, 14), tooltip)
+            self.progressBar(10, 10, 280, 15, 1, f"Energy: {int(objs.value)}", (194, 14, 14), tooltip)
 
 
             # id

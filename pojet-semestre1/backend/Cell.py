@@ -192,8 +192,7 @@ class Cell:
         bornBob = b.createMonoparentalChild()
 
         # Add the new bob to the cell
-        if bornBob.jobProperty != Network.uuid_player:
-            Network.sendNewBob(bornBob)
+        Network.sendNewBob(bornBob)
         self.addBob(bornBob)
 
         # Set the action of the parent to "parthenogenesis"
@@ -226,7 +225,7 @@ class Cell:
             Network.requestNetworkProperty(b2.id)
 
             # On supprime le bob s'il n'a pas été trouvé par le détenteur de la propriété réseau
-            if Network.timeout(5,Network.recvNetworkProperty) == -1:
+            if Network.timeout(5,Network.recvNetworkProperty, b2.id) == -1:
                 self.removeBob(b2.id)
                 return
 

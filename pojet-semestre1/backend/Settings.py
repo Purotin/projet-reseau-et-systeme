@@ -55,7 +55,7 @@ class Settings:
     #----------------------------------------------ENERGY--------------------------------------------
 
 
-    spawnEnergy = 100 # the energy level a bob starts at when spawned by the game
+    spawnEnergy = 151 # the energy level a bob starts at when spawned by the game
 
     energyMax = 200 # the maximum amount of energy a bob can have
 

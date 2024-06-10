@@ -390,8 +390,8 @@ class Network:
         message = f"RemoveAllBobs;{Network.uuid_player}"
         Network.sendMessage(message)
         
-    def sendForceRemoveEntity(entity):
-        message = f"ForceRemoveEntity;{entity.id}"
+    def sendForceRemoveEntity(id):
+        message = f"ForceRemoveEntity;{id}"
         Network.sendMessage(message)
 
 
@@ -419,6 +419,9 @@ class Network:
             message = message.split(";")
             if message[0] == "MateResponse" and message[1] == str(Network.uuid_player) and message[2] == str(bob_id):
                 return message
+            elif message[0] == "MateRequest" and message[1] == str(Network.uuid_player):
+                Network.sendMateResponse(Network.grid.findEntityById(uuid.UUID(message[2])))
+                return 0
             
         # Si on n'a pas reçu de réponse, on retourne -1
         return -1

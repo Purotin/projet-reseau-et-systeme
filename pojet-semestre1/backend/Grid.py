@@ -803,6 +803,8 @@ class Grid:
             # Si le bob s'est déplacé, on met à jour sa position
             if message[1] != "None":
                 self.moveBobTo(bob, int(float(message[1])), int(float(message[2])), noMessage=True)
+        else:
+            self.forceRemoveEntity(uuid.UUID(message[0]))
 
     def updateFood(self, message):
         """
@@ -825,12 +827,12 @@ class Grid:
 
         # Retrieve the Food object from the grid based on the message
         food = self.getCellAt(message[0], message[1]).edibleObject
-        
-        # Update the food object
-        if message[2] == 0:
-            self.removeFoodAt(message[0], message[1], food.jobProperty)
-        else:
-            food.value = message[2]
+        if food is not None:
+            # Update the food object
+            if message[2] == 0:
+                self.removeFoodAt(message[0], message[1], food.jobProperty)
+            else:
+                food.value = message[2]
             
         return 0
 
@@ -857,7 +859,7 @@ class Grid:
         message (list): A list containing the message data.
         """
         # Create a new Bob object based on the message
-        newBob = Bob(ID = uuid.UUID(message[0]),x = float(message[1]), y = float(message[2]), mass = int(message[3]), energy = int(float(message[4])), Nproperty = uuid.UUID(message[5]), Jproperty = uuid.UUID(message[6]))
+        newBob = Bob(ID = uuid.UUID(message[0]),x = float(message[1]), y = float(message[2]), mass = float(message[3]), energy = float(message[4]), Nproperty = uuid.UUID(message[5]), Jproperty = uuid.UUID(message[6]))
         self.addBob(newBob)
 
     def addFoodFromMessage(self, message):
