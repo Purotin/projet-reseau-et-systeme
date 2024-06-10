@@ -55,6 +55,8 @@ class Network:
         game_info = Network.grid.getGameInfo()
         reponse = "ConnectionResponse;"+message[1]+";"+strUuid+";"+game_info
         Network.sendMessage(reponse)
+        if Network.game.paused == True:
+            Network.game.wasPaused = False
         Network.game.paused = True
       
     def recvConnectionResponse():
@@ -288,7 +290,8 @@ class Network:
                     Network.grid.removeAllBobs(uuid.UUID(message[1]))
 
                 case "ConnectionSuccess":
-                    Network.game.paused = False
+                    if Network.game.wasPaused == True:
+                        Network.game.paused = False
         
     
     

@@ -37,6 +37,7 @@ class Game:
         self.running = True
         self.render = True
         self.paused = not noInterface # Pause the game if there is an interface, else run it
+        self.wasPaused = False
 
         # Display related variables
         self.screenWidth = screenWidth
@@ -240,6 +241,7 @@ class Game:
                         self.gui.displayPauseMenu = not self.gui.displayPauseMenu
                     else:
                         self.paused = not self.paused
+                        self.wasPaused = not self.wasPaused
                         self.gui.displayPauseMenu = self.paused
                 # Rendering the game (r)
                 if event.key == pygame.K_r:
@@ -247,6 +249,7 @@ class Game:
                 # Pausing the game (p)
                 if event.key == pygame.K_p:
                     self.paused = not self.paused
+                    self.wasPaused = not self.wasPaused
                     self.gui.displayPauseMenu = not self.paused
                 # Rendering the height (h)
                 if event.key == pygame.K_h:
@@ -393,6 +396,7 @@ class Game:
         self.gridDict = self.grid.gridDict
 
         self.paused = True
+        self.wasPaused = True
         self.gui.displayPauseMenu = True
         
         print("Game loaded from " + pathToSaveFile)
