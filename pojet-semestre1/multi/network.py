@@ -125,20 +125,20 @@ class Network:
      
 
     def sendPlayerlist(uid, pseudo):
-        messageplayers = "PlayerlistResponse" + ";" + uid
-        for i in Network.Playerlist.items():
-            messageplayers +=  ";" + str(i[0]) + ";" + str(i[1][0]) + ";" + str(i[1][1])
+        messageplayers = "PlayerlistResponse;"+ uid
+        for playerinfo in Network.Playerlist.keys():
+            messageplayers +=  ";" + str(playerinfo) + ";" + str(Network.Playerlist[playerinfo][0]) + ";" + str(Network.Playerlist[playerinfo][1])
         Network.Playerlist[uid] = [pseudo, str(len(Network.Playerlist)+1)]
-        print(messageplayers)
         Network.sendDirectMessage(messageplayers)
         
 
     def recvPlayerlist(message):
-        strUuid = Network.uuid_player
+        print("c'est entré")
+        strUuid = str(Network.uuid_player)
         if (strUuid == message[1]):
             playerlist = message[2:]
             max = 0
-            for i in range(0,len(message), 3):
+            for i in range(0,len(playerlist), 3):
                 playeruid = message[i]
                 player_name_number = [message[i+1], message[i+2]]
                 if (max < int(message[i+2])):
@@ -146,6 +146,8 @@ class Network:
                 Network.PlayerList[playeruid] = player_name_number
 
             Network.Playerlist[strUuid].append(str(max+1))
+            print("Playerlist actualisée :")
+            print(Network.Playerlist)
 
             
 
@@ -340,6 +342,7 @@ class Network:
                 match header:
 
                     case "PlayerlistResponse":
+                        print("c'est bien case")
                         Network.recvPlayerlist(message)
 
                     case "ConnectionRequest":

@@ -9,6 +9,9 @@ import time
 if __name__ == "__main__":
         
     Network.selectServer()
+    pseudo = input("Enter your playername: ")
+    strUuid = str(Network.uuid_player)
+    Network.Playerlist[strUuid] = [pseudo, 0]
     game = Game(grid_size=50, screenWidth=1080, screenHeight=750, dayLimit=0, noInterface=False)
 
     print("Shortcuts: \n")
@@ -22,9 +25,7 @@ if __name__ == "__main__":
     print("Scroll to zoom in/out")
     print("Click and drag to move the camera")
     print("")
-    pseudo = input("Enter your playername: ")
-    strUuid = str(Network.uuid_player)
-    Network.Playerlist[strUuid] = [pseudo]
+
 
 
     game.run()

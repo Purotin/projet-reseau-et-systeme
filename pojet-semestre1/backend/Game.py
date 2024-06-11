@@ -88,6 +88,7 @@ class Game:
         # Si la réponse de connexion n'est pas reçue
         else:
             print("you are the first player, creating a new game")
+            Network.Playerlist[str(Network.uuid_player)][1] = 1
 
             # Création de la grille à partir de la taille donnée en argument du constructeur
             grid = Grid(grid_size, 0, 0)
