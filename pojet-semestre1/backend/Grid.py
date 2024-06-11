@@ -901,7 +901,7 @@ class Grid:
 
 
 
-    def processNetworkPropertyRequest(message):
+    def processNetworkPropertyRequest(self, message):
         entity = Network.grid.findEntityById(uuid.UUID(message[1]))
 
         if uuid.UUID(message[2]) == Network.uuid_player:
@@ -911,13 +911,13 @@ class Grid:
                 Network.sendMessage(response)
 
             elif isinstance(entity, Bob):
-                response = f"EatBobReponse;{message[1]}"
+                response = f"EatBobReponse;{entity.id};{message[1]}"
             elif isinstance(entity, Food):
-                response = f"EatFoodResponse{message[1]}"
+                response = f"EatFoodResponse;{entity.id};{message[1]}"
 
             Network.sendMessage(response)
 
-    def processMateResponse(b2_attributes):
+    def processMateResponse(self, b2_attributes):
         # On met à jour ses statistiques
         b2 = Network.grid.findEntityById(b2_attributes[0])
 
@@ -967,7 +967,7 @@ class Grid:
         Network.sendBobUpdate(b1)
         Network.sendBobUpdate(b2)
         
-    def processEatBobResponse(message):
+    def processEatBobResponse(self, message):
         for couple in Network.actionsInProgress["mate"]:
             if couple[0] == uuid.UUID(message[0]):
                 otherBob = couple[0]
@@ -985,7 +985,7 @@ class Grid:
         otherBob.networkProperty = Network.uuid_player
         Network.sendBobUpdate(otherBob)
     
-    def processEatFoodResponse(message):
+    def processEatFoodResponse(self, message):
         for couple in Network.actionsInProgress["mate"]:
             if couple[0] == uuid.UUID(message[0]):
                 food = couple[0]

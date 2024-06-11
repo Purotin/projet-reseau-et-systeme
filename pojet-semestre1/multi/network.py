@@ -211,7 +211,7 @@ class Network:
         # Si l'entité n'existe pas chez nous, on la retire chez l'autre joueur
         if bob is None:
             Network.sendForceRemoveEntity(uuid.UUID(message[0]))
-            message = f"MateResponse;{message[0]};{None};{None};{None};{None};{None};{None}"
+            message = f"MateResponse;{message[0]};{None};{None};{None};{None};{None};{None};{Network.uuid_player}"
             Network.sendDirectMessage(message)
             
         if bob.networkProperty == Network.uuid_player:
@@ -226,7 +226,7 @@ class Network:
             Network.sendBobUpdate(bob)
 
             # On envoie les informations du bob
-            message = f"MateResponse;{bob.id};{bob.energy};{bob.velocity};{bob.velocityBuffer};{bob.mass};{bob.perception};{bob.memorySize}"
+            message = f"MateResponse;{bob.id};{bob.energy};{bob.velocity};{bob.velocityBuffer};{bob.mass};{bob.perception};{bob.memorySize};{Network.uuid_player}"
             Network.sendDirectMessage(message)
 
     def recvGameActionsResponse():
@@ -251,19 +251,19 @@ class Network:
                     case "MateResponse":
                         
                         for couple in Network.actionsInProgress["Mate"]:
-                            if couple[0].id == message[1]:
+                            if message[8] == Network.uuid_player and couple[0].id == message[1]:
                                 Network.actionsInProgress["Mate"].remove(couple)
                                 Network.grid.processMateResponse(message[1:])
                         
                     case "EatBobResponse":
                         for couple in Network.actionsInProgress["EatBob"]:
-                            if couple[0].id == message[1]:
+                            if message[2] == Network.uuid_player and couple[0].id == message[1]:
                                 Network.actionsInProgress["EatBob"].remove(couple)
                                 Network.grid.processEatBobResponse(message[1:])
                             
                     case "EatFoodResponse":
                         for couple in Network.actionsInProgress["EatFood"]:
-                            if couple[0].id == message[1]:
+                            if message[2] == Network.uuid_player and couple[0].id == message[1]:
                                 Network.actionsInProgress["EatFood"].remove(couple)
                                 Network.grid.processEatFoodResponse(message[1:])
             
@@ -338,10 +338,10 @@ class Network:
                         Network.processMateRequest(message[1:])
                         
                     case "EatFood":
-                        Network.processNetworkPropertyRequest(message)
+                        Network.grid.processNetworkPropertyRequest(message)
                         
                     case "EatBob":
-                        Network.processNetworkPropertyRequest(message)
+                        Network.grid.processNetworkPropertyRequest(message)
 
                     case "Bob":
                         Network.grid.updateBob(message[1:])
