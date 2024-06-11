@@ -20,7 +20,7 @@ from frontend.DisplayStatsChart import DisplayStatsChart
 
 class Game:
 
-    def __init__(self, grid_size, screenWidth=930, screenHeight=640, dayLimit = 0, noInterface=False):
+    def __init__(self, grid_size, screenWidth=930, screenHeight=640, dayLimit = 0, noInterface=False, spawnFoodNb = 50):
         
         pygame.init()
 
@@ -78,7 +78,7 @@ class Game:
             networkArgs = Network.processConnectionResponse(message)
 
             # Création de la grille à partir des données reçues
-            grid = Grid(networkArgs["gridSize"], 10, 50)
+            grid = Grid(networkArgs["gridSize"], 0, spawnFoodNb)
             for bob in networkArgs["bobs"]:
                 grid.addBob(Bob(x=bob["x"], y=bob["y"], ID=bob["id"], mass=bob["mass"], energy=bob["energy"], Nproperty=bob["networkProperty"], Jproperty=bob["jobProperty"]))
         
@@ -90,7 +90,7 @@ class Game:
             print("you are the first player, creating a new game")
 
             # Création de la grille à partir de la taille donnée en argument du constructeur
-            grid = Grid(grid_size, 0, 0)
+            grid = Grid(grid_size, 0, spawnFoodNb)
 
         # ⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️ FIN DE LA CONNEXION AU RÉSEAU ⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️
 
