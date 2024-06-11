@@ -68,6 +68,18 @@ class Gui:
         # draw uuid of the player
         text = font.render(f"Player uuid: {Network.uuid_player}", True, (255,255,255))
         self.guiSurface.blit(text, (10, 10 + bobImg.get_height() + 10))
+        
+        match Network.ip_game:
+            case "239.0.0.1":
+                text = font.render(f"Game Room : 1", True, (255,255,255))
+            case "239.0.0.2":
+                text = font.render(f"Game Room : 2", True, (255,255,255))
+            case "239.0.0.3":
+                text = font.render(f"Game Room : 3", True, (255,255,255))
+            case "239.0.0.4":
+                text = font.render(f"Game Room : 4", True, (255,255,255))
+                
+        self.guiSurface.blit(text, (10, 10 + bobImg.get_height() + 10 + text.get_height() + 10))
 
 
         # draw a day count indicator in the top right corner

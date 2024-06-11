@@ -13,35 +13,37 @@ class Network:
     recvMessageBuffer = ""
     messagesBuffer = ""
     connected = False
+    ip_game = ""
 
     def __init__(self):
         print("Network initialized")
         
     def selectServer():
         
-        print("Select the server you want to connect to: ")
-        print("1 : Server 1")
-        print("2 : Server 2")
-        print("3 : Server 3")
-        print("4 : Server 4")
+        print("Select the Game you want to connect to: ")
+        print("1 : Game 1")
+        print("2 : Game 2")
+        print("3 : Game 3")
+        print("4 : Game 4")
         
-        server = input()
-        ip_server = None
-        if server == "1":
-            ip_server = "239.0.0.1"
-        elif server == "2":
-            ip_server = "239.0.0.2"
-        elif server == "3":
-            ip_server = "239.0.0.3"
-        elif server == "4":
-            ip_server = "239.0.0.3"
+        game = input()
+        ip_game = None
+        if game == "1":
+            ip_game = "239.0.0.1"
+        elif game == "2":
+            ip_game = "239.0.0.2"
+        elif game == "3":
+            ip_game = "239.0.0.3"
+        elif game == "4":
+            ip_game = "239.0.0.4"
         else:
             Network.selectServer()
-        return ip_server
+            
+        Network.ip_game = ip_game
 
     #  ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️ GESTION DE LA CONNEXION ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️
 
-    def requestConnection(IP, port):
+    def requestConnection():
         """Demande de connexion à la partie en cours
 
         Args:
@@ -52,8 +54,18 @@ class Network:
             Cette fonction permet de demander une connexion à une partie en cours. 
             Si aucune partie n'est en cours, une nouvelle partie sera créée.
         """
+        process_name = "network_manager"
+        try:
+        # Utilise os.system pour exécuter la commande pkill
+            result = os.system(f'pkill {process_name}')
+            if result == 0:
+                print(f"Processus '{process_name}' a été tué avec succès.")
+            else:
+                print(f"Erreur lors de la tentative de tuer le processus '{process_name}'. Code de retour: {result}")
+        except Exception as e:
+            print(f"Une erreur inattendue est survenue: {e}")
         # Lancer le network_manager
-        command = f"./../src/tmp/network_manager {IP} {port} py_to_c c_to_py &"
+        command = f"./../src/tmp/network_manager {Network.ip_game} 9999 py_to_c c_to_py &"
         os.system(command)
 
         # Envoyer la requête de connexion
@@ -255,7 +267,10 @@ class Network:
                 if start_index is not None:
                     message = buffer[start_index+1:i]
                     start_index = None
-                    messageLength = int(message.split(";")[0])
+                    try:
+                        messageLength = int(message.split(";")[0])
+                    except:
+                        continue
                     finalMessage = message.split(";")[1:]
                     finalMessage = ";".join(finalMessage)
                     print("Received message : ", finalMessage)
@@ -486,19 +501,3 @@ class Network:
                 elif message[0] == "MateRequest":
                     Network.sendMateResponse(Network.grid.findEntityById(uuid.UUID(message[1])))
                     return 0
-
-
-    
-# EXEMPLES DE MESSAGE
-
-# Requête prop réseau       : {NetworkProperty;player_id;obj_id}
-# Déplacement bob           : {bob;id;last_X;last_Y;positionX;positionY;None;}
-# bob mange bob ou food     : {bob;id;positionX;positionY;None;energy}
-# nourriture eaten          : {food;id;positionX;positionY;NewValue}
-
-# Création de bob           : {newbob;positionX;positionY;totalVelocity;mass;energy;perception;memorySize;maxAmmos;ID;Nproperty;Jproperty}
-# Création de nourriture    : {newfood;positionX;positionY;value;ID;Nproperty;Jproperty}
-
-# Réponse prop réseau       : {NetworkProperty;player_id;obj_id}
-# Requête de connexion      : {ConnectionRequest}
-# Réponse de connexion      : {ConnectionResponse;receiverJobProperty;senderJobProperty;gridSize;..........}
