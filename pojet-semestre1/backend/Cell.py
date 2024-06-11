@@ -249,24 +249,24 @@ class Cell:
             elif b2_attributes == 0:
                 return
             
-            b2.energy = b2_attributes[3]
-            b2.velocity = b2_attributes[4]
-            b2.velocityBuffer = b2.attributes[5]
-            b2.mass = b2_attributes[6]
-            b2.perception = b2_attributes[7]
-            b2.memorySize = b2_attributes[8]
+            b2.energy = float(b2_attributes[2])
+            b2.velocity = int(b2_attributes[3])
+            b2.velocityBuffer = float(b2_attributes[4])
+            b2.mass = float(b2_attributes[5])
+            b2.perception = float(b2_attributes[6])
+            b2.memorySize = float(b2_attributes[7])
 
         # Create a new bob
         bornBob = Bob.createBiParentalChild(b1, b2)
 
         # Add the new bob to the cell
-        if bornBob.jobProperty != Network.uuid_player:
-            Network.sendNewBob(bornBob)
+        Network.sendNewBob(bornBob)
         self.addBob(bornBob)
 
         # Set the action of the two parents to "mate"
         b1.action = "love"
-        b2.action = "love"
+        if b2.networkProperty == Network.uuid_player:
+            b2.action = "love"
 
         # Remove SuperMutation effects
         b1.effects = [effect for effect in b1.effects if not isinstance(effect, SuperMutation)]

@@ -83,7 +83,7 @@ int create_client_socket(char *multicast_ip, char *port, struct sockaddr_in *pee
 
 
 // Lire les messages du pair et les écrire dans le pipe vers Python
-void handle_communication(int py_to_c, int c_to_py, int client_sockfd, struct sockaddr_in *peer_addr, socklen_t peer_addr_len, int sockfd, char *UUID_Player) { 
+void handle_communication(int py_to_c, int c_to_py, int client_sockfd, struct sockaddr_in *peer_addr, socklen_t peer_addr_len, int sockfd) { 
     fd_set readfds;
     char message[MAX_LENGTH];
     struct sockaddr_in peer_addr_recv;
@@ -132,7 +132,7 @@ void handle_communication(int py_to_c, int c_to_py, int client_sockfd, struct so
                 message[num_bytes_read] = '\0';  // Assurez-vous que le message est terminé
                 // Envoyer le message au pair
                 //regarde si il ya le mot clé "disconnect" et uuid_player dans le message
-                if (strstr(message, "Disconnect") != NULL && strstr(message, UUID_Player) != NULL){
+                if (strstr(message, "Disconnect") != NULL){
                     //envoyer un message de déconnexion au pair
                     sendto(client_sockfd, message, num_bytes_read, 0, (struct sockaddr *)peer_addr, peer_addr_len);
                     //fermer les sockets

@@ -30,7 +30,7 @@ class Network:
             Si aucune partie n'est en cours, une nouvelle partie sera créée.
         """
         # Lancer le network_manager
-        command = f"./../src/tmp/network_manager {IP} {port} py_to_c c_to_py {Network.uuid_player}&"
+        command = f"./../src/tmp/network_manager {IP} {port} py_to_c c_to_py &"
         os.system(command)
 
         # Envoyer la requête de connexion
@@ -109,7 +109,7 @@ class Network:
         return dataDictionnary
 
     def disconnect():
-        Network.sendMessage("Disconnect;"+str(Network.uuid_player))
+        Network.sendDirectMessage("Disconnect;"+str(Network.uuid_player))
         Network.pipes.close()
 
     def timeout(timeout,function,*args):
@@ -238,6 +238,8 @@ class Network:
                     print("Received message : ", finalMessage)
                     if len(finalMessage) == messageLength:
                         messageList.append(finalMessage)
+                        
+        Network.recvMessageBuffer = ""
         return messageList
 
     def processMessages():
