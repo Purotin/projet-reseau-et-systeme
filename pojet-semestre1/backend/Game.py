@@ -20,7 +20,7 @@ from frontend.DisplayStatsChart import DisplayStatsChart
 
 class Game:
 
-    def __init__(self, grid_size, screenWidth=930, screenHeight=640, dayLimit = 0, noInterface=False, spawnFoodNb = 50):
+    def __init__(self, grid_size, screenWidth=930, screenHeight=640, dayLimit = 0, noInterface=False, nbDailyFood = 50, nbBobs = 5, maxTPS = Settings.maxTps):
         
         pygame.init()
 
@@ -32,6 +32,7 @@ class Game:
         self.tickClock = pygame.time.Clock()
         self.tickCount = 0
         self.dayLimit = dayLimit
+        self.maxTPS = maxTPS
         
         # Pause related variables
         self.running = True
@@ -66,7 +67,7 @@ class Game:
         first_connection = True
 
         # Attente de la réponse de connexion
-        message = Network.timeout(5,Network.recvConnectionResponse)
+        message = Network.timeout(1,Network.recvConnectionResponse)
         Network.connected = True
         if message is not None:
             first_connection = False
@@ -78,7 +79,7 @@ class Game:
             networkArgs = Network.processConnectionResponse(message)
 
             # Création de la grille à partir des données reçues
-            grid = Grid(networkArgs["gridSize"], 0, spawnFoodNb)
+            grid = Grid(networkArgs["gridSize"], foodCount=nbDailyFood, bobCount=nbBobs)
             for bob in networkArgs["bobs"]:
                 grid.addBob(Bob(x=bob["x"], y=bob["y"], ID=bob["id"], mass=bob["mass"], energy=bob["energy"], Nproperty=bob["networkProperty"], Jproperty=bob["jobProperty"]))
         
@@ -90,7 +91,7 @@ class Game:
             print("you are the first player, creating a new game")
 
             # Création de la grille à partir de la taille donnée en argument du constructeur
-            grid = Grid(grid_size, 0, spawnFoodNb)
+            grid = Grid(grid_size, bobCount=nbBobs, foodCount=nbDailyFood)  
 
         # ⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️ FIN DE LA CONNEXION AU RÉSEAU ⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️
 
@@ -160,7 +161,7 @@ class Game:
             if not self.paused:
                 # Vérifier si suffisamment de temps s'est écoulé depuis le dernier tick
                 current_time = pygame.time.get_ticks()
-                if current_time - last_tick_time >= 5000 / Settings.maxTps:
+                if current_time - last_tick_time >= 1000 / self.maxTPS:
                     # Mettre à jour le temps du dernier tick
                     last_tick_time = current_time
 
@@ -178,7 +179,7 @@ class Game:
                         self.bestBobGenerationHistory.append(self.currentBestBob.generation)
                     
                 # Calculate alpha, the percentage of the tick that has passed
-                alpha = (pygame.time.get_ticks() - last_tick_time) / (5000 / Settings.maxTps)
+                alpha = (pygame.time.get_ticks() - last_tick_time) / (1000 / self.maxTPS)
 
             if self.noInterface:
                 bobCount = len(self.grid.getAllBobs())
