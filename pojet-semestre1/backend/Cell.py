@@ -246,7 +246,7 @@ class Cell:
             if b2_attributes == -1 or b2_attributes == None:
                 self.removeBob(b2.id)
                 return
-            elif b2.attributes == 0:
+            elif b2_attributes == 0:
                 return
             
             b2.energy = b2_attributes[3]
