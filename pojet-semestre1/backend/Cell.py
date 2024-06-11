@@ -157,7 +157,7 @@ class Cell:
                                 Network.requestNetworkProperty(otherBob.id)
 
                                 # On supprime le bob s'il n'a pas été trouvé par le détenteur de la propriété réseau
-                                networkProperty = Network.timeout(5, Network.recvNetworkProperty, otherBob.id)
+                                networkProperty = Network.timeout(1, Network.recvNetworkProperty, otherBob.id)
                                 if networkProperty == -1 or networkProperty == None:
                                     self.removeBob(otherBob.id)
                                     continue
@@ -181,7 +181,7 @@ class Cell:
                         Network.requestNetworkProperty(self.edibleObject.id)
 
                         # On supprime l'objet comestible s'il n'a pas été trouvé par le détenteur de la propriété réseau
-                        networkProperty = Network.timeout(5, Network.recvNetworkProperty, self.edibleObject.id)
+                        networkProperty = Network.timeout(1, Network.recvNetworkProperty, self.edibleObject.id)
                         if networkProperty == -1 or networkProperty == None:
                             self.edibleObject = None
                             continue
@@ -232,7 +232,7 @@ class Cell:
             Network.requestNetworkProperty(b2.id)
 
             # On supprime le bob s'il n'a pas été trouvé par le détenteur de la propriété réseau
-            networkProperty = Network.timeout(5,Network.recvNetworkProperty,b2.id)
+            networkProperty = Network.timeout(1,Network.recvNetworkProperty,b2.id)
             if networkProperty == -1:
                 self.removeBob(b2.id)
                 return
@@ -243,7 +243,7 @@ class Cell:
             Network.sendMateRequest(b2)
 
             # On met à jour ses statistiques
-            b2_attributes = Network.timeout(5,Network.recvMateResponse,b2.id)
+            b2_attributes = Network.timeout(1,Network.recvMateResponse,b2.id)
 
             print("\n\n\n",b2_attributes,"\n\n\n")
 

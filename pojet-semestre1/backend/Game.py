@@ -85,6 +85,9 @@ class Game:
         
             for food in networkArgs["foods"]:
                 grid.addEdible(Food(x=food["x"], y=food["y"], ID=food["id"], energy=food["energy"], Nproperty=food["networkProperty"], Jproperty=food["jobProperty"]))
+
+            successMessage = "ConnectionSuccess;"+str(Network.uuid_player)
+            Network.sendMessage(successMessage)
             
         # Si la réponse de connexion n'est pas reçue
         else:
