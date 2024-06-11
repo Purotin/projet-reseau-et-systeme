@@ -17,9 +17,6 @@ class Network:
     actionsInProgress = {"Mate":[], "EatBob":[], "EatFood":[]}
     connected = False
     ip_game = ""
-
-    def __init__(self):
-        print("Network initialized")
         
     def selectServer():
         
@@ -244,6 +241,7 @@ class Network:
             string_message = message
             length = len(string_message)
             message = message.split(";")
+            print(Network.actionsInProgress)
             
             
             if message[0] in gameActionsHeaders:
@@ -420,9 +418,9 @@ class Network:
             
             
     def removeAllEntityActionBuffer():
-        ids = [id[0] for id in Network.actionsInProgress["Mate"]]
-        ids += [id[0] for id in Network.actionsInProgress["EatBob"]]
-        ids += [id[0] for id in Network.actionsInProgress["EatFood"]]
+        ids = [couple[0].id for couple in Network.actionsInProgress["Mate"]]
+        ids += [couple[0].id for couple in Network.actionsInProgress["EatBob"]]
+        ids += [couple[0].id for couple in Network.actionsInProgress["EatFood"]]
         for id in ids:
             Network.grid.forceRemoveEntity(id)
             Network.sendForceRemoveEntity(id)

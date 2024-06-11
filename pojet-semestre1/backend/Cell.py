@@ -64,7 +64,6 @@ class Cell:
 
         if not noMessage:
             Network.sendForceRemoveEntity(bobID)
-            print("nvvuievbzeunj")
 
         self.bobs = list(filter(lambda x: x.id != bobID, self.bobs))
 

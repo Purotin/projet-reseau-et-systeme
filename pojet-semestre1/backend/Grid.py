@@ -799,7 +799,7 @@ class Grid:
 
         if bob is not None:
             # On met à jour l'énergie du bob
-            bob.energy = int(float(message[3]))
+            bob.energy = float(message[3])
             bob.networkProperty = uuid.UUID(message[4])
 
             # Si le bob s'est déplacé, on met à jour sa position
@@ -983,15 +983,18 @@ class Grid:
         bob.action = "eat"
 
         otherBob.networkProperty = Network.uuid_player
+
         Network.sendBobUpdate(otherBob)
+        Network.sendBobUpdate(bob)
     
     def processEatFoodResponse(self, message):
         for couple in Network.actionsInProgress["mate"]:
             if couple[0] == uuid.UUID(message[0]):
                 food = couple[0]
                 bob = couple[1]
-        Network.grid.getCellAt(food.x,food.y).eat(bob, food)
         food.networkProperty = Network.uuid_player
+        self.getCellAt(food.x,food.y).eat(bob, food)
 
         Network.sendFoodUpdate(food)
+        Network.sendBobUpdate(bob)
     
