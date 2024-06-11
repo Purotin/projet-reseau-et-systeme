@@ -232,7 +232,7 @@ class Grid:
             Network.sendBobUpdate(b)
 
     # Add food at the position (x,y) in the grid
-    def addEdible(self, edible, noMessage = False):
+    def addEdible(self, edible):
         """
         This method adds an Edible object to the grid.
         If the cell at that position does not yet exist, it is created.
@@ -893,4 +893,83 @@ class Grid:
                     return bob
         return None
     
+
+
+    # ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️ GESTION DES INTÉRACTIONS AVEC D'AURTRES JOUEURS ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️
+
+
+
+    def processMateResponse(b2_attributes):
+        # On met à jour ses statistiques
+        b2 = Network.grid.findEntityById(b2_attributes[0])
+
+        # On supprime le bob s'il n'a pas été trouvé par le détenteur de la propriété réseau
+        if b2_attributes == -1 or b2_attributes == None:
+            Network.grid.removeBob(b2.id)
+            return
+        elif b2_attributes == 0:
+            return
+        
+        b2.id = uuid.UUID(b2_attributes[0])
+        b2.energy = float(b2_attributes[1])
+        b2.velocity = int(b2_attributes[2])
+        b2.velocityBuffer = float(b2_attributes[3])
+        b2.mass = float(b2_attributes[4])
+        b2.perception = float(b2_attributes[5])
+        b2.memorySize = float(b2_attributes[6])
+
+        for couple in Network.actionsInProgress["mate"]:
+            if couple[0] == b2.id:
+                b1 = couple[1]
+
+         # Create a new bob
+        bornBob = Bob.createBiParentalChild(b1, b2)
+
+        # Add the new bob to the cell
+        Network.sendNewBob(bornBob)
+        Network.grid.addBob(bornBob)
+
+        # Set the action of the two parents to "mate"
+        b1.action = "love"
+
+        # Remove SuperMutation effects
+        b1.effects = [effect for effect in b1.effects if not isinstance(effect, SuperMutation)]
+        b2.effects = [effect for effect in b2.effects if not isinstance(effect, SuperMutation)]
+        b1.mutationFactor = 1
+        b2.mutationFactor = 1
+
+        # Reduce the energy of the bobs
+        b1.incrementEnergy(-Settings.matingEnergyConsumption)
+        b2.incrementEnergy(-Settings.matingEnergyConsumption)
+
+        # On fixe la propriété réseau de l'autre bob
+        b2.networkProperty = Network.uuid_player
+
+        # Send the update to the grid
+        Network.sendBobUpdate(b1)
+        Network.sendBobUpdate(b2)
+        
+    def processEatBobResponse(message):
+        for couple in Network.actionsInProgress["mate"]:
+            if couple[0] == uuid.UUID(message[0]):
+                otherBob = couple[0]
+                bob = couple[1]
+
+        # The Bob consumes the energy of the other Bob object
+        bob.energy = min(bob.energyMax, otherBob.energy * .5 * (1 - otherBob.mass / bob.mass))
+
+        # The other Bob is removed
+        Network.sendForceRemoveEntity(otherBob.id)
+        otherBob.action = "eaten"
+        # Set the actions of the two Bob objects
+        bob.action = "eat"
+        otherBob.networkProperty = Network.uuid_player
+    
+    def processEatFoodResponse(message):
+        for couple in Network.actionsInProgress["mate"]:
+            if couple[0] == uuid.UUID(message[0]):
+                food = couple[0]
+                bob = couple[1]
+        Network.grid.getCellAt(food.x,food.y).eat(bob, food)
+        food.networkProperty = Network.uuid_player
     

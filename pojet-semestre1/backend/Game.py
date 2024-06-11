@@ -147,6 +147,10 @@ class Game:
         # Game loop
         while self.running:
             # GESTION DES DONNÉES RÉSEAU REÇUES
+            Network.sendActionRequestBuffer()
+            response = Network.timeout(1, Network.recvGameActionsResponse)
+            if response is None:
+                Network.removeAllEntityActionBuffer()
             Network.sendMessagesBuffer()
             Network.processMessages()
 

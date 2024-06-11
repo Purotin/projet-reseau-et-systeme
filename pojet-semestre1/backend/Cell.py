@@ -154,13 +154,8 @@ class Cell:
                         if massRatio < Settings.massRatioThreshold:
                             # Request otherBob network property
                             if otherBob.networkProperty != Network.uuid_player:
-                                Network.requestNetworkProperty(otherBob.id)
-
-                                # On supprime le bob s'il n'a pas été trouvé par le détenteur de la propriété réseau
-                                networkProperty = Network.timeout(1, Network.recvNetworkProperty, otherBob.id)
-                                if networkProperty == -1 or networkProperty == None:
-                                    self.removeBob(otherBob.id)
-                                    continue
+                                Network.requestEatBob(otherBob, bob)
+                                continue
  
                             # The Bob consumes the energy of the other Bob object
                             bob.energy = min(bob.energyMax, otherBobEnergy * .5 * (1 - massRatio))
@@ -178,13 +173,9 @@ class Cell:
                     
                     # On demande la propriété réseau de l'objet comestible
                     if self.edibleObject.networkProperty != Network.uuid_player:
-                        Network.requestNetworkProperty(self.edibleObject.id)
-
-                        # On supprime l'objet comestible s'il n'a pas été trouvé par le détenteur de la propriété réseau
-                        networkProperty = Network.timeout(1, Network.recvNetworkProperty, self.edibleObject.id)
-                        if networkProperty == -1 or networkProperty == None:
-                            self.edibleObject = None
-                            continue
+                        Network.requestEatFood(self.edibleObject, bob)
+                        continue
+                
                     self.eat(bob, self.edibleObject)
 
     # Split a bob into two bobs, (reproduction by parthenogenesis)
@@ -227,39 +218,8 @@ class Cell:
 
         # Si l'autre bob appartient à un autre joueur
         if b2.networkProperty != Network.uuid_player:
-
-            # On demande sa propriété réseau
-            Network.requestNetworkProperty(b2.id)
-
-            # On supprime le bob s'il n'a pas été trouvé par le détenteur de la propriété réseau
-            networkProperty = Network.timeout(1,Network.recvNetworkProperty,b2.id)
-            if networkProperty == -1:
-                self.removeBob(b2.id)
-                return
-            elif networkProperty == None:
-                return
-
-            # On demande ses statistiques
-            Network.sendMateRequest(b2)
-
-            # On met à jour ses statistiques
-            b2_attributes = Network.timeout(1,Network.recvMateResponse,b2.id)
-
-            print("\n\n\n",b2_attributes,"\n\n\n")
-
-            # On supprime le bob s'il n'a pas été trouvé par le détenteur de la propriété réseau
-            if b2_attributes == -1 or b2_attributes == None:
-                self.removeBob(b2.id)
-                return
-            elif b2_attributes == 0:
-                return
-            
-            b2.energy = float(b2_attributes[2])
-            b2.velocity = int(b2_attributes[3])
-            b2.velocityBuffer = float(b2_attributes[4])
-            b2.mass = float(b2_attributes[5])
-            b2.perception = float(b2_attributes[6])
-            b2.memorySize = float(b2_attributes[7])
+            Network.sendMateRequest(b1, b2)
+            return
 
         # Create a new bob
         bornBob = Bob.createBiParentalChild(b1, b2)

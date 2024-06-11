@@ -10,8 +10,11 @@ class Network:
 
     uuid_player = uuid.uuid4()
     grid = None
+    requestsBuffer = ""
     recvMessageBuffer = ""
     messagesBuffer = ""
+    ActionRequestBuffer = ""
+    actionsInProgress = {"Mate":[], "EatBob":[], "EatFood":[]}
     connected = False
     ip_game = ""
 
@@ -174,73 +177,115 @@ class Network:
 
 
 
-    def requestNetworkProperty(entityId):
-        # Broadcast for Nproperty
-        message = "NetworkPropertyRequest;"+str(Network.uuid_player) + ";" + str(entityId)
-        Network.sendDirectMessage(message)
-   
+    def requestEatFood(food, bob):
+        message = "EatFood" + food.id
+        Network.actionsInProgress["Eat"].append([food, bob])
+        Network.storreActionRequest(message)
+
+    def requestEatBob(prey, predator):
+        message = "EatBob" + prey.id
+        Network.actionsInProgress["EatFood"].append([prey, predator])
+        Network.storeActionRequest(message)
+
+    def sendMateRequest(b1, b2):       # {MateRequest;bob.id;bob.currentX;bob.currentY}
+        # Envoie une demande de reproduction
+        message = f"MateRequest;{b2.id};{b2.currentX};{b2.currentY}"
+        Network.actionsInProgress["Mate"].append([b2, b1])
+        Network.storeActionRequest(message)
+
     def processNetworkPropertyRequest(message):
-        """ Traite la requête de propriété réseau
-
-        Args:
-            message (str) : contient le header NetworkPropertyRequest et l'UID de l'objet
-
-        Explications :
-            
-        """
-        
-        # message[1] : player_id
-        # message[2] : obj_id
-    
         entity = Network.grid.findEntityById(uuid.UUID(message[2]))
 
         if entity is None:
-            response = "NetworkPropertyResponse;"+ message[1] + ";None"
+            response = message[0] + message[1] + ";None"
             Network.sendMessage(response)
 
         elif entity.networkProperty == Network.uuid_player:
-            response = "NetworkPropertyResponse;"+ message[1] + ";" + message[2]
+            response = message[0] + message[1] + ";" + message[2]
             Network.sendMessage(response)
             entity.networkProperty = message[1]
 
-    def recvNetworkProperty(obj_id):
-        """ Attendre la réponse de la connexion et mettre à jour la propriété réseau de l'objet
+    def processEatFood(message):
+        pass
+
+    def processMateRequest(message):
+        """ Traite une demande de reproduction
 
         Args:
-            obj_id (str) : l'UID de l'objet
-        
+            message (str) : contient le header MateRequest et les informations du bob
+
         Explications :
-            Cette fonction est appelée par la fonction timeout pour attendre la réponse de la connexion
-            - Elle parcourt les messages reçus
-            - Si le message est une réponse de connexion et que la réponse est pour moi, on met à jour la propriété réseau de l'objet
-            - On place les autres messages dans recvMessageBuffer
-        """     
-        messageList = Network.processBuffer()
-        
+            Cette fonction traite une demande de reproduction
+            - Si l'entité n'existe pas chez nous, on la retire chez l'autre joueur
+            - Si le bob est à une position différente de celle demandée, on le déplace
+            - On envoie une réponse à la demande de reproduction
+        """
+        # Traite une demande de reproduction
+        bob = Network.grid.findEntityById(uuid.UUID(message[0]))
 
-        # On cherche un message de type {NetworkPropertyResponse;player_id;obj_id}
-        for message in messageList:
-            length = len(message)
-            string_message = message
-            message = message.split(";")
-            # Si le message est une réponse de connexion et que la réponse est pour moi
-            if message[0] == "NetworkPropertyResponse" and message[1] == str(Network.uuid_player):
-
-                # Si l'entité n'existe pas chez l'autre joueur, on retourne -1
-                if message[2] == "None":
-                    return -1
-
-                # On met à jour la propriété réseau de l'objet
-                entity = Network.grid.findEntityById(uuid.UUID(message[2]))
-                if entity is not None:
-                    entity.networkProperty = Network.uuid_player
-                    return 0
+        # Si l'entité n'existe pas chez nous, on la retire chez l'autre joueur
+        if bob is None:
+            Network.sendForceRemoveEntity(uuid.UUID(message[0]))
+            message = f"MateResponse;{message[0]};{None};{None};{None};{None};{None};{None}"
+            Network.sendDirectMessage(message)
             
-            # On ignore les messages qui concernent l'objet pour lequel on a la propriété réseau
-            # ex : ignorer Déplacement bob : {bob;id;last_X;last_Y;positionX;positionY;None;}
-            elif (message[1] !=str(obj_id)):
-                Network.recvMessageBuffer += "{"+str(length)+";"+string_message+"}"
-     
+        if bob.jobProperty == Network.uuid_player:
+            x = float(message[1])
+            y = float(message[2])
+
+            # Si le bob est à une position différente de celle demandée, on le déplace
+            if bob.currentX != x or bob.currentY != y:
+                Network.grid.moveBobTo(bob, x, y, True)
+            
+            # On continue le processus de reproduction à partir des informations reçus
+            message = f"MateResponse;{bob.id};{bob.energy};{bob.velocity};{bob.velocityBuffer};{bob.mass};{bob.perception};{bob.memorySize}"
+            Network.sendDirectMessage(message)
+
+    def recvGameActionsResponse():
+        """
+            Attendre la réponse de tout les actions du jeu et process les messages reçus
+        """
+        
+        allMessages = Network.processBuffer()
+        highPriorityHeader = ["MateResponse", "EatBobResponse", "EatFoodResponse"]
+        all_id = [id[0] for id in Network.actionsInProgress["Mate"]]
+        all_id += [id[0] for id in Network.actionsInProgress["EatBob"]]
+        all_id += [id[0] for id in Network.actionsInProgress["EatFood"]]
+        
+        for message in allMessages:
+            string_message = message
+            length = len(string_message)
+            message = message.split(";")
+            
+            
+            if message[0] in highPriorityHeader:
+                match message[0]:
+                    case "MateResponse":
+                        
+                        for couple in Network.actionsInProgress["Mate"]:
+                            if couple[0].id == message[1]:
+                                Network.actionsInProgress["Mate"].remove(couple)
+                                Network.processMateResponse(message[1:])
+                        
+                    case "EatBobResponse":
+                        for couple in Network.actionsInProgress["EatBob"]:
+                            if couple[0].id == message[1]:
+                                Network.actionsInProgress["EatBob"].remove(couple)
+                                Network.processEatBobResponse(message[1:])
+                            
+                    case "EatFoodResponse":
+                        for couple in Network.actionsInProgress["EatFood"]:
+                            if couple[0].id == message[1]:
+                                Network.actionsInProgress["EatFood"].remove(couple)
+                                Network.processEatFoodResponse(message[1:])
+            
+            else:
+                if message[1] not in all_id:
+                    Network.recvMessageBuffer += "{"+str(length)+";"+string_message+"}"
+        
+        if all([not Network.actionsInProgress[key] for key in Network.actionsInProgress]):
+            return True
+            
 
     # ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️ GESTION DES MESSAGES ENTRANTS ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️
 
@@ -255,7 +300,7 @@ class Network:
         """
         buffer = Network.recvMessageBuffer
         messageList = []
-        for i in range(1000):
+        for i in range(10):
             buffer += Network.pipes.recv()
 
 
@@ -301,11 +346,14 @@ class Network:
                     case "ConnectionRequest":
                         Network.processConnectionRequest(message)
 
-                    case "NetworkPropertyRequest":
-                        Network.processNetworkPropertyRequest(message)
-
                     case "MateRequest":
                         Network.processMateRequest(message[1:])
+                        
+                    case "EatFood":
+                        Network.processNetworkPropertyRequest(message)
+                        
+                    case "EatBob":
+                        Network.processNetworkPropertyRequest(message)
 
                     case "Bob":
                         Network.grid.updateBob(message[1:])
@@ -360,6 +408,39 @@ class Network:
         # print("Sent message : ", mess)
         Network.messagesBuffer += mess
         # Network.pipes.send(mess)
+    
+    def storeActionRequest(message):
+        """
+            Ajoute le message au buffer de messages à envoyer
+            ajoute la taille du message au début du message
+            message : le message à envoyer
+        """
+               
+        length = str(len(message))
+        mess = "{"+length+";"+message+"}"
+        # print("Sent high priority message : ", mess)
+        Network.ActionRequestBuffer += mess
+        
+    def sendActionRequestBuffer():
+        """
+            Envoie tous les messages dans le buffer de haute priorité si le buffer n'est pas vide
+        """
+        if Network.ActionRequestBuffer != "":
+            Network.pipes.send(Network.ActionRequestBuffer)
+            print("Sent high priority messages : ", Network.ActionRequestBuffer)
+            Network.ActionRequestBuffer = ""
+            
+            
+    def removeAllEntityActionBuffer():
+        ids = [id[0] for id in Network.actionsInProgress["Mate"]]
+        ids += [id[0] for id in Network.actionsInProgress["EatBob"]]
+        ids += [id[0] for id in Network.actionsInProgress["EatFood"]]
+        for id in ids:
+            Network.grid.forceRemoveEntity(id)
+            Network.sendForceRemoveEntity(id)
+            
+        Network.actionsInProgress = {"Mate":[], "EatBob":[], "EatFood":[]}
+        
         
     def sendDirectMessage(message):
         """
@@ -444,61 +525,3 @@ class Network:
 
     # ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️ GESTION DE LA REPRODUCTION ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️
 
-
-
-    def sendMateRequest(bob):       # {MateRequest;bob.id;bob.currentX;bob.currentY}
-        # Envoie une demande de reproduction
-        message = f"MateRequest;{bob.id};{bob.currentX};{bob.currentY}"
-        Network.sendDirectMessage(message)
-
-    def processMateRequest(message):
-        """ Traite une demande de reproduction
-
-        Args:
-            message (str) : contient le header MateRequest et les informations du bob
-
-        Explications :
-            Cette fonction traite une demande de reproduction
-            - Si l'entité n'existe pas chez nous, on la retire chez l'autre joueur
-            - Si le bob est à une position différente de celle demandée, on le déplace
-            - On envoie une réponse à la demande de reproduction
-        """
-        # Traite une demande de reproduction
-        bob = Network.grid.findEntityById(uuid.UUID(message[0]))
-
-        # Si l'entité n'existe pas chez nous, on la retire chez l'autre joueur
-        if bob is None:
-            Network.sendForceRemoveEntity(uuid.UUID(message[0]))
-            message = f"MateResponse;{message[0]};{None};{None};{None};{None};{None};{None}"
-            Network.sendDirectMessage(message)
-            
-        if bob.jobProperty == Network.uuid_player:
-            x = float(message[1])
-            y = float(message[2])
-
-            # Si le bob est à une position différente de celle demandée, on le déplace
-            if bob.currentX != x or bob.currentY != y:
-                Network.grid.moveBobTo(bob, x, y, True)
-            
-            message = f"MateResponse;{bob.id};{bob.energy};{bob.velocity};{bob.velocityBuffer};{bob.mass};{bob.perception};{bob.memorySize}"
-            Network.sendDirectMessage(message)
-
-    def recvMateResponse(bob_id):
-
-        # Attend une réponse à une demande de reproduction
-        messageList = Network.processBuffer()
-
-        for message in messageList:
-
-            message = message.split(";")
-            
-            if message[1] == str(bob_id):
-                if message[0] == "MateResponse":
-                    if message[2] != "None":
-                        return message
-                    else:
-                        return None
-                    
-                elif message[0] == "MateRequest":
-                    Network.sendMateResponse(Network.grid.findEntityById(uuid.UUID(message[1])))
-                    return 0
