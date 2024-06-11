@@ -7,13 +7,9 @@ from multi.network import Network
 import time
 
 if __name__ == "__main__":
-    
-    
-    
-    ip_server = Network.selectServer()
-    
+        
 
-    game = Game(grid_size=50, screenWidth=1080, screenHeight=750, dayLimit=0, noInterface=False, ip_server= ip_server)
+    game = Game(grid_size=50, screenWidth=1080, screenHeight=750, dayLimit=0, noInterface=False, ip_server= Network.selectServer())
 
     print("Shortcuts: \n")
     print("Press 'escape' to display the pause menu")
