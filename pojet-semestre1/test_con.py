@@ -9,7 +9,7 @@ import time
 if __name__ == "__main__":
         
     Network.selectServer()
-    game = Game(grid_size=50, screenWidth=1080, screenHeight=750, dayLimit=0, noInterface=False, nbDailyFood=0, nbBobs=0, maxTPS=5)
+    game = Game(grid_size=20, screenWidth=1080, screenHeight=750, dayLimit=0, noInterface=False, nbDailyFood=0, nbBobs=0, maxTPS=5)
 
     print("Shortcuts: \n")
     print("Press 'escape' to display the pause menu")

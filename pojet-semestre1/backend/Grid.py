@@ -800,6 +800,7 @@ class Grid:
         if bob is not None:
             # On met à jour l'énergie du bob
             bob.energy = int(float(message[3]))
+            bob.networkProperty = uuid.UUID(message[4])
 
             # Si le bob s'est déplacé, on met à jour sa position
             if message[1] != "None":
@@ -834,6 +835,7 @@ class Grid:
                 self.removeFoodAt(message[0], message[1], food.jobProperty)
             else:
                 food.value = message[2]
+                food.networkProperty = uuid.UUID(message[3])
             
         return 0
 
@@ -873,7 +875,7 @@ class Grid:
         """
         # Create a new Food object based on the message
         newFood = Food(ID = uuid.UUID(message[0]), x=float(message[1]), y=float(message[2]), energy = int(message[3]), Nproperty = uuid.UUID(message[4]), Jproperty = uuid.UUID(message[5]))
-        self.addEdible(newFood, True)
+        self.addEdible(newFood)
     
     def getGameInfo(self):
         mess = ""
@@ -898,6 +900,22 @@ class Grid:
     # ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️ GESTION DES INTÉRACTIONS AVEC D'AURTRES JOUEURS ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️
 
 
+
+    def processNetworkPropertyRequest(message):
+        entity = Network.grid.findEntityById(uuid.UUID(message[1]))
+
+        if uuid.UUID(message[2]) == Network.uuid_player:
+
+            if entity is None:
+                response = f"{message[0]};{message[1]};None"
+                Network.sendMessage(response)
+
+            elif isinstance(entity, Bob):
+                response = f"EatBobReponse;{message[1]}"
+            elif isinstance(entity, Food):
+                response = f"EatFoodResponse{message[1]}"
+
+            Network.sendMessage(response)
 
     def processMateResponse(b2_attributes):
         # On met à jour ses statistiques
@@ -963,7 +981,9 @@ class Grid:
         otherBob.action = "eaten"
         # Set the actions of the two Bob objects
         bob.action = "eat"
+
         otherBob.networkProperty = Network.uuid_player
+        Network.sendBobUpdate(otherBob)
     
     def processEatFoodResponse(message):
         for couple in Network.actionsInProgress["mate"]:
@@ -972,4 +992,6 @@ class Grid:
                 bob = couple[1]
         Network.grid.getCellAt(food.x,food.y).eat(bob, food)
         food.networkProperty = Network.uuid_player
+
+        Network.sendFoodUpdate(food)
     

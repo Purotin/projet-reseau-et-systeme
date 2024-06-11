@@ -178,13 +178,13 @@ class Network:
 
 
     def requestEatFood(food, bob):
-        message = "EatFood" + food.id
-        Network.actionsInProgress["Eat"].append([food, bob])
-        Network.storreActionRequest(message)
+        message = "EatFood" + ";" + str(food.id) + ";" + str(food.networkProperty)
+        Network.actionsInProgress["EatFood"].append([food, bob])
+        Network.storeActionRequest(message)
 
     def requestEatBob(prey, predator):
-        message = "EatBob" + prey.id
-        Network.actionsInProgress["EatFood"].append([prey, predator])
+        message = "EatBob" + ";" + str(prey.id) +  ";"  + str(prey.networkProperty)
+        Network.actionsInProgress["EatBob"].append([prey, predator])
         Network.storeActionRequest(message)
 
     def sendMateRequest(b1, b2):       # {MateRequest;bob.id;bob.currentX;bob.currentY}
@@ -192,21 +192,6 @@ class Network:
         message = f"MateRequest;{b2.id};{b2.currentX};{b2.currentY}"
         Network.actionsInProgress["Mate"].append([b2, b1])
         Network.storeActionRequest(message)
-
-    def processNetworkPropertyRequest(message):
-        entity = Network.grid.findEntityById(uuid.UUID(message[2]))
-
-        if entity is None:
-            response = message[0] + message[1] + ";None"
-            Network.sendMessage(response)
-
-        elif entity.networkProperty == Network.uuid_player:
-            response = message[0] + message[1] + ";" + message[2]
-            Network.sendMessage(response)
-            entity.networkProperty = message[1]
-
-    def processEatFood(message):
-        pass
 
     def processMateRequest(message):
         """ Traite une demande de reproduction
@@ -229,15 +214,18 @@ class Network:
             message = f"MateResponse;{message[0]};{None};{None};{None};{None};{None};{None}"
             Network.sendDirectMessage(message)
             
-        if bob.jobProperty == Network.uuid_player:
+        if bob.networkProperty == Network.uuid_player:
             x = float(message[1])
             y = float(message[2])
 
             # Si le bob est à une position différente de celle demandée, on le déplace
             if bob.currentX != x or bob.currentY != y:
                 Network.grid.moveBobTo(bob, x, y, True)
-            
-            # On continue le processus de reproduction à partir des informations reçus
+
+            # On met à jour le bob pour changer sa propriété réseau
+            Network.sendBobUpdate(bob)
+
+            # On envoie les informations du bob
             message = f"MateResponse;{bob.id};{bob.energy};{bob.velocity};{bob.velocityBuffer};{bob.mass};{bob.perception};{bob.memorySize}"
             Network.sendDirectMessage(message)
 
@@ -247,7 +235,7 @@ class Network:
         """
         
         allMessages = Network.processBuffer()
-        highPriorityHeader = ["MateResponse", "EatBobResponse", "EatFoodResponse"]
+        gameActionsHeaders = ["MateResponse", "EatBobResponse", "EatFoodResponse"]
         all_id = [id[0] for id in Network.actionsInProgress["Mate"]]
         all_id += [id[0] for id in Network.actionsInProgress["EatBob"]]
         all_id += [id[0] for id in Network.actionsInProgress["EatFood"]]
@@ -258,26 +246,26 @@ class Network:
             message = message.split(";")
             
             
-            if message[0] in highPriorityHeader:
+            if message[0] in gameActionsHeaders:
                 match message[0]:
                     case "MateResponse":
                         
                         for couple in Network.actionsInProgress["Mate"]:
                             if couple[0].id == message[1]:
                                 Network.actionsInProgress["Mate"].remove(couple)
-                                Network.processMateResponse(message[1:])
+                                Network.grid.processMateResponse(message[1:])
                         
                     case "EatBobResponse":
                         for couple in Network.actionsInProgress["EatBob"]:
                             if couple[0].id == message[1]:
                                 Network.actionsInProgress["EatBob"].remove(couple)
-                                Network.processEatBobResponse(message[1:])
+                                Network.grid.processEatBobResponse(message[1:])
                             
                     case "EatFoodResponse":
                         for couple in Network.actionsInProgress["EatFood"]:
                             if couple[0].id == message[1]:
                                 Network.actionsInProgress["EatFood"].remove(couple)
-                                Network.processEatFoodResponse(message[1:])
+                                Network.grid.processEatFoodResponse(message[1:])
             
             else:
                 if message[1] not in all_id:
@@ -475,15 +463,15 @@ class Network:
         
         if bob.action == "move":
             # Envoie la nouvelle position du bob
-            message = f"Bob;{bob.id};{bob.currentX};{bob.currentY};{bob.energy}"
+            message = f"Bob;{bob.id};{bob.currentX};{bob.currentY};{bob.energy};{bob.networkProperty}"
 
         elif bob.action in ["eat", "parthenogenesis", "love", "idle"]:
             # Envoie la nouvelle énergie du bob
-            message = f"Bob;{bob.id};None;None;{bob.energy}"
+            message = f"Bob;{bob.id};None;None;{bob.energy};{bob.networkProperty}"
 
         elif bob.action == "eaten" or bob.action == "decay":
             # Met l'énergie du bob à 0
-            message = f"Bob;{bob.id};None;None;0"
+            message = f"Bob;{bob.id};None;None;0;{bob.networkProperty}"
 
         else:
             print(bob.action)
@@ -498,7 +486,7 @@ class Network:
 
     def sendFoodUpdate(food):   # {Food;id;positionX;positionY;NewValue}
         # Envoie la nouvelle valeur de la nourriture
-        message = f"Food;{food.x};{food.y};{food.value}"
+        message = f"Food;{food.x};{food.y};{food.value}{food.networkProperty}"
         Network.sendMessage(message)
         
     def sendRemoveFoodAt(x,y):   #  {RemoveFood;X;Y;ID}
