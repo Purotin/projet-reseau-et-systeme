@@ -20,7 +20,7 @@ from frontend.DisplayStatsChart import DisplayStatsChart
 
 class Game:
 
-    def __init__(self, grid_size, screenWidth=930, screenHeight=640, dayLimit = 0, noInterface=False, network=None):
+    def __init__(self, grid_size, screenWidth=930, screenHeight=640, dayLimit = 0, noInterface=False, ip_server=None):
         
         pygame.init()
 
@@ -62,13 +62,17 @@ class Game:
         # ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️ CONNEXION AU RÉSEAU ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️
 
         # Envoi de la requête de connexion à la partie en cours sur le réseau
+        if ip_server is None:
+            print("No server IP provided.")
+            exit(1)
         
-        Network.requestConnection("239.0.0.1", "1234")
+        Network.requestConnection(ip_server, "9999")
     
         first_connection = True
 
         # Attente de la réponse de connexion
         message = Network.timeout(5,Network.recvConnectionResponse)
+        Network.connected = True
         if message is not None:
             first_connection = False
 

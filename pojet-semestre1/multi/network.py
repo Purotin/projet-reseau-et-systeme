@@ -12,9 +12,32 @@ class Network:
     grid = None
     recvMessageBuffer = ""
     messagesBuffer = ""
+    connected = False
 
     def __init__(self):
         print("Network initialized")
+        
+    def selectServer():
+        
+        print("Select the server you want to connect to: ")
+        print("1 : Server 1")
+        print("2 : Server 2")
+        print("3 : Server 3")
+        print("4 : Server 4")
+        
+        server = input()
+        ip_server = None
+        if server == "1":
+            ip_server = "239.0.0.1"
+        elif server == "2":
+            ip_server = "239.0.0.2"
+        elif server == "3":
+            ip_server = "239.0.0.3"
+        elif server == "4":
+            ip_server = "239.0.0.3"
+        else:
+            Network.selectServer()
+        return ip_server
 
     #  ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️ GESTION DE LA CONNEXION ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️
 
@@ -253,54 +276,56 @@ class Network:
             message = message.split(";")
             header = message[0]
 
-            match header:
-                case "ConnectionRequest":
-                    Network.processConnectionRequest(message)
+            if Network.connected == False and header == "ConnectionResponse":
+                Network.processConnectionResponse(message)
 
-                case "ConnectionResponse":
-                    Network.processConnectionResponse(message)
+            else :
+                match header:
 
-                case "NetworkPropertyRequest":
-                    Network.processNetworkPropertyRequest(message)
+                    case "ConnectionRequest":
+                        Network.processConnectionRequest(message)
 
-                case "MateRequest":
-                    Network.processMateRequest(message[1:])
+                    case "NetworkPropertyRequest":
+                        Network.processNetworkPropertyRequest(message)
 
-                case "Bob":
-                    Network.grid.updateBob(message[1:])
+                    case "MateRequest":
+                        Network.processMateRequest(message[1:])
 
-                case "Food":
-                    Network.grid.updateFood(message[1:])
+                    case "Bob":
+                        Network.grid.updateBob(message[1:])
+
+                    case "Food":
+                        Network.grid.updateFood(message[1:])
+                        
+                    case "NewBob":
+                        Network.grid.addBobFromMessage(message[1:])
+
+                    case "NewFood":
+                        Network.grid.addFoodFromMessage(message[1:])
                     
-                case "NewBob":
-                    Network.grid.addBobFromMessage(message[1:])
-
-                case "NewFood":
-                    Network.grid.addFoodFromMessage(message[1:])
-                
-                case "Disconnect":
-                    Network.grid.removeAllEdibles(uuid.UUID(message[1]))
-                    Network.grid.removeAllBobs(uuid.UUID(message[1]))
-                
-                case "RemoveFood":
-                    Network.grid.removeFoodAt(float(message[1]), float(message[2]), uuid.UUID(message[3]))
+                    case "Disconnect":
+                        Network.grid.removeAllEdibles(uuid.UUID(message[1]))
+                        Network.grid.removeAllBobs(uuid.UUID(message[1]))
                     
-                case "RemoveBob":
-                    Network.grid.removeAllBobsAt(float(message[1]), float(message[2]), uuid.UUID(message[3]))
+                    case "RemoveFood":
+                        Network.grid.removeFoodAt(float(message[1]), float(message[2]), uuid.UUID(message[3]))
+                        
+                    case "RemoveBob":
+                        Network.grid.removeAllBobsAt(float(message[1]), float(message[2]), uuid.UUID(message[3]))
+                        
+                    case "RemoveAllFoods":
+                        Network.grid.removeAllEdibles(uuid.UUID(message[1]))
                     
-                case "RemoveAllFoods":
-                    Network.grid.removeAllEdibles(uuid.UUID(message[1]))
-                
-                case "RemoveAllBobs":
-                    Network.grid.removeAllBobs(uuid.UUID(message[1]))
+                    case "RemoveAllBobs":
+                        Network.grid.removeAllBobs(uuid.UUID(message[1]))
 
-                case "ConnectionSuccess":
-                    if Network.game.wasPaused == True:
-                        Network.game.paused = False
-                
-                case "ForceRemoveEntity":
-                    Network.grid.forceRemoveEntity(uuid.UUID(message[1]))
-        
+                    case "ConnectionSuccess":
+                        if Network.game.wasPaused == True:
+                            Network.game.paused = False
+                    
+                    case "ForceRemoveEntity":
+                        Network.grid.forceRemoveEntity(uuid.UUID(message[1]))
+            
     
     
     # ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️ GESTION DES MESSAGES SORTANTS ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️
