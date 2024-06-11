@@ -426,7 +426,7 @@ class Network:
         # Si l'entité n'existe pas chez nous, on la retire chez l'autre joueur
         if bob is None:
             Network.sendForceRemoveEntity(uuid.UUID(message[0]))
-            message = f"MateResponse;{None};{None};{None};{None};{None};{None};{None}"
+            message = f"MateResponse;{message[0]};{None};{None};{None};{None};{None};{None}"
             Network.sendDirectMessage(message)
             
         if bob.jobProperty == Network.uuid_player:
@@ -436,14 +436,9 @@ class Network:
             # Si le bob est à une position différente de celle demandée, on le déplace
             if bob.currentX != x or bob.currentY != y:
                 Network.grid.moveBobTo(bob, x, y, True)
-            Network.sendMateResponse(bob)
-                
-
-    def sendMateResponse(bob):      # {MateResponse;player_id;bob_id;energy;velocity;velocityBuffer;mass;perception;memorySize}
-
-        # Envoie une réponse à une demande de reproduction
-        if bob is not None:
+            
             message = f"MateResponse;{bob.id};{bob.energy};{bob.velocity};{bob.velocityBuffer};{bob.mass};{bob.perception};{bob.memorySize}"
+            Network.sendDirectMessage(message)
 
     def recvMateResponse(bob_id):
 
@@ -451,17 +446,19 @@ class Network:
         messageList = Network.processBuffer()
 
         for message in messageList:
+
             message = message.split(";")
-            if message[0] == "MateResponse":
-                if message[1] == str(Network.uuid_player) and message[2] == str(bob_id):
-                    return message
-                elif message[1] == str(Network.uuid_player) and message[2] == "None":
-                    return -1
-                
-                
-            elif message[0] == "MateRequest" and message[1] == str(Network.uuid_player):
-                Network.sendMateResponse(Network.grid.findEntityById(uuid.UUID(message[2])))
-                return 0
+            
+            if message[1] == str(bob_id):
+                if message[0] == "MateResponse":
+                    if message[2] != "None":
+                        return message
+                    else:
+                        return None
+                    
+                elif message[0] == "MateRequest":
+                    Network.sendMateResponse(Network.grid.findEntityById(uuid.UUID(message[1])))
+                    return 0
 
 
     
