@@ -96,10 +96,10 @@ class Network:
                 obj["networkProperty"] = uuid.UUID(data[3])
                 obj["x"] = float(data[4])
                 obj["y"] = float(data[5])
-                obj["energy"] = int(float(data[6]))
+                obj["energy"] = float(data[6])
                 
                 if data[0] == "bob":
-                    obj["mass"] = int(data[7])
+                    obj["mass"] = float(data[7])
                     dataDictionnary["bobs"].append(obj)
                 elif data[0] == "food":
                     dataDictionnary["foods"].append(obj)
@@ -261,6 +261,9 @@ class Network:
                 case "NetworkPropertyRequest":
                     Network.processNetworkPropertyRequest(message)
 
+                case "MateRequest":
+                    Network.processMateRequest(message[1:])
+
                 case "Bob":
                     Network.grid.updateBob(message[1:])
 
@@ -400,31 +403,65 @@ class Network:
 
 
 
-    def sendMateRequest(bob):       # {MateRequest;bob.id}
+    def sendMateRequest(bob):       # {MateRequest;bob.id;bob.currentX;bob.currentY}
         # Envoie une demande de reproduction
-        message = f"MateRequest;{bob.id}"
-        Network.sendMessage(message)
+        message = f"MateRequest;{bob.id};{bob.currentX};{bob.currentY}"
+        Network.sendDirectMessage(message)
+
+    def processMateRequest(message):
+        """ Traite une demande de reproduction
+
+        Args:
+            message (str) : contient le header MateRequest et les informations du bob
+
+        Explications :
+            Cette fonction traite une demande de reproduction
+            - Si l'entité n'existe pas chez nous, on la retire chez l'autre joueur
+            - Si le bob est à une position différente de celle demandée, on le déplace
+            - On envoie une réponse à la demande de reproduction
+        """
+        # Traite une demande de reproduction
+        bob = Network.grid.findEntityById(uuid.UUID(message[0]))
+
+        # Si l'entité n'existe pas chez nous, on la retire chez l'autre joueur
+        if bob is None:
+            Network.sendForceRemoveEntity(uuid.UUID(message[0]))
+            message = f"MateResponse;{None};{None};{None};{None};{None};{None};{None}"
+            Network.sendDirectMessage(message)
+            
+        if bob.jobProperty == Network.uuid_player:
+            x = float(message[1])
+            y = float(message[2])
+
+            # Si le bob est à une position différente de celle demandée, on le déplace
+            if bob.currentX != x or bob.currentY != y:
+                Network.grid.moveBobTo(bob, x, y, True)
+            Network.sendMateResponse(bob)
+                
 
     def sendMateResponse(bob):      # {MateResponse;player_id;bob_id;energy;velocity;velocityBuffer;mass;perception;memorySize}
 
         # Envoie une réponse à une demande de reproduction
-        message = f"MateResponse;{bob.id};{bob.energy};{bob.velocity};{bob.velocityBuffer};{bob.mass};{bob.perception};{bob.memorySize}"
-        Network.sendMessage(message)
+        if bob is not None:
+            message = f"MateResponse;{bob.id};{bob.energy};{bob.velocity};{bob.velocityBuffer};{bob.mass};{bob.perception};{bob.memorySize}"
 
     def recvMateResponse(bob_id):
+
         # Attend une réponse à une demande de reproduction
         messageList = Network.processBuffer()
 
         for message in messageList:
             message = message.split(";")
-            if message[0] == "MateResponse" and message[1] == str(Network.uuid_player) and message[2] == str(bob_id):
-                return message
+            if message[0] == "MateResponse":
+                if message[1] == str(Network.uuid_player) and message[2] == str(bob_id):
+                    return message
+                elif message[1] == str(Network.uuid_player) and message[2] == "None":
+                    return -1
+                
+                
             elif message[0] == "MateRequest" and message[1] == str(Network.uuid_player):
                 Network.sendMateResponse(Network.grid.findEntityById(uuid.UUID(message[2])))
                 return 0
-            
-        # Si on n'a pas reçu de réponse, on retourne -1
-        return -1
 
 
     
