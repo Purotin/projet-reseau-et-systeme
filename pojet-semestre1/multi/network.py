@@ -4,13 +4,14 @@ import uuid
 from multi.properties_manager import *
 from multi.pipe_handler import PipeHandler
 import time
-
-
+import socket
 class Network:
 
     uuid_player = uuid.uuid4()
     grid = None
     recvMessageBuffer = ""
+    Playerlist = {}
+
     messagesBuffer = ""
     connected = False
     ip_game = ""
@@ -18,15 +19,21 @@ class Network:
     def __init__(self):
         print("Network initialized")
         
+    
     def selectServer():
+        
         
         print("Select the Game you want to connect to: ")
         print("1 : Game 1")
         print("2 : Game 2")
         print("3 : Game 3")
         print("4 : Game 4")
+
+
+
         
         game = input()
+
         ip_game = None
         if game == "1":
             ip_game = "239.0.0.1"
@@ -42,6 +49,13 @@ class Network:
         Network.ip_game = ip_game
 
     #  ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️ GESTION DE LA CONNEXION ⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️⬇️
+
+
+
+
+
+
+
 
     def requestConnection():
         """Demande de connexion à la partie en cours
@@ -71,7 +85,7 @@ class Network:
         # Envoyer la requête de connexion
         strUuid = str(Network.uuid_player)
         Network.pipes = PipeHandler()
-        Network.sendDirectMessage("ConnectionRequest;"+strUuid)
+        Network.sendDirectMessage("ConnectionRequest;"+strUuid + ";" + Network.Playerlist[strUuid][0])
    
     def processConnectionRequest(message):
         """ Traite la requête de connexion à la partie en cours
@@ -88,8 +102,10 @@ class Network:
         strUuid = str(Network.uuid_player)
         # game_info doit contenir tous les objets du jeu
         game_info = Network.grid.getGameInfo()
+        
         reponse = "ConnectionResponse;"+message[1]+";"+strUuid+";"+game_info
         Network.sendMessage(reponse)
+        Network.sendPlayerlist(message[1], message[-1])
         if Network.game.paused == True:
             Network.game.wasPaused = False
         Network.game.paused = True
@@ -107,6 +123,32 @@ class Network:
                 return message
         return None
      
+
+    def sendPlayerlist(uid, pseudo):
+        messageplayers = "PlayerlistResponse" + ";" + uid
+        for i in Network.Playerlist.items():
+            messageplayers +=  ";" + str(i[0]) + ";" + str(i[1][0]) + ";" + str(i[1][1])
+        Network.Playerlist[uid] = [pseudo, str(len(Network.Playerlist)+1)]
+        print(messageplayers)
+        Network.sendDirectMessage(messageplayers)
+        
+
+    def recvPlayerlist(message):
+        strUuid = Network.uuid_player
+        if (strUuid == message[1]):
+            playerlist = message[2:]
+            max = 0
+            for i in range(0,len(message), 3):
+                playeruid = message[i]
+                player_name_number = [message[i+1], message[i+2]]
+                if (max < int(message[i+2])):
+                    max = int(message[i+2])
+                Network.PlayerList[playeruid] = player_name_number
+
+            Network.Playerlist[strUuid].append(str(max+1))
+
+            
+
     def processConnectionResponse(message):
         """ Traite la réponse à la requête de connexion
         Args : message (str) : contient le header, la taille de la grille et tous les bobs et nourritures de la partie en cours
@@ -296,6 +338,9 @@ class Network:
 
             else :
                 match header:
+
+                    case "PlayerlistResponse":
+                        Network.recvPlayerlist(message)
 
                     case "ConnectionRequest":
                         Network.processConnectionRequest(message)

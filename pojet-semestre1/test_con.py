@@ -22,6 +22,9 @@ if __name__ == "__main__":
     print("Scroll to zoom in/out")
     print("Click and drag to move the camera")
     print("")
+    pseudo = input("Enter your playername: ")
+    strUuid = str(Network.uuid_player)
+    Network.Playerlist[strUuid] = [pseudo]
 
 
     game.run()
