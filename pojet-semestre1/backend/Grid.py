@@ -170,7 +170,7 @@ class Grid:
             return
         
         # Else, remove it from the grid
-        cell.removeBob(bobID)
+        cell.removeBob(bobID, True)
 
         # Remove the cell from the dictionnary if it is now empty
         if cell.isEmpty():
@@ -689,8 +689,7 @@ class Grid:
             x = randint(0, self.size - 1)
             y = randint(0, self.size - 1)
             bob = Bob(x, y)
-            if bob.jobProperty != Network.uuid_player:
-                Network.sendNewBob(bob)
+            Network.sendNewBob(bob)
             self.addBob(bob)
 
     # Populates the grid with food at the start of a new day
@@ -708,7 +707,9 @@ class Grid:
             elif Settings.enableIsotonicDrinks and randint(1, 100) <= 2:
                 self.addEdible(EffectFood(x, y, energy=10, effect=PowerCharged()))
             else:
-                self.addEdible(Food(x,y))
+                food = Food(x, y)
+                self.addEdible(food)
+                Network.sendNewFood(food)
         
     # Populates the grid with sausages at the start of a new day
     def spawnSausages(self):

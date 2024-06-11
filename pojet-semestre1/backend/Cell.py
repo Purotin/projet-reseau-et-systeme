@@ -64,6 +64,7 @@ class Cell:
 
         if not noMessage:
             Network.sendForceRemoveEntity(bobID)
+            print("nvvuievbzeunj")
 
         self.bobs = list(filter(lambda x: x.id != bobID, self.bobs))
 
@@ -326,5 +327,8 @@ class Cell:
         for bob in self.bobs:
             # If a Bob object's energy reaches zero, it is removed from the cell
             if bob.action == "decay" or bob.action == "eaten":
-                self.removeBob(bob.id)
+                if bob.jobProperty == Network.uuid_player:
+                    self.removeBob(bob.id)
+                else:
+                    self.removeBob(bob.id, True)
 
