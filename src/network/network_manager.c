@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
     socklen_t peer_addr_len = sizeof(peer_addr);
 
     // Vérifier si le nombre d'arguments est correct
-    if (argc != 6) {
+    if (argc != 5) {
         fprintf(stderr, "Usage: %s <MULTICAST_IP> <PORT> <py_to_c_NAME> <c_to_py_NAME>\n", argv[0]);
         return 1;  // Terminer le programme avec un code d'erreur
     }

@@ -619,7 +619,7 @@ class Grid:
 
             if b.energy <= 0 and b.action != "eaten":
                 b.action = "decay"
-                Network.sendBobUpdate(b)
+                Network.sendForceRemoveEntity(b.id)
 
         # Update the action of all foreign bobs
         foreignBobs = [b for b in self.getAllBobs() if b.jobProperty != Network.uuid_player]
