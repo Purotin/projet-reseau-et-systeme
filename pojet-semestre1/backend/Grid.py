@@ -218,7 +218,7 @@ class Grid:
             b.action = "move"
         
         # Remove the bob from its current position
-        self.removeBob(b.id, b.currentX, b.currentY)
+        self.removeBob(b.id, b.currentX, b.currentY, noMessage = True)
 
         # Update the bob's position
         b.lastX, b.lastY = b.currentX, b.currentY
@@ -619,7 +619,7 @@ class Grid:
 
             if b.energy <= 0 and b.action != "eaten":
                 b.action = "decay"
-                Network.sendForceRemoveEntity(b.id)
+                Network.sendBobUpdate(b)
 
         # Update the action of all foreign bobs
         foreignBobs = [b for b in self.getAllBobs() if b.jobProperty != Network.uuid_player]

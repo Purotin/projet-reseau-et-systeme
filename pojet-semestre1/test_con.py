@@ -10,7 +10,7 @@ if __name__ == "__main__":
     
 
 
-    game = Game(20, screenWidth=1080, screenHeight=750, dayLimit=0, noInterface=False)
+    game = Game(grid_size=50, screenWidth=1080, screenHeight=750, dayLimit=0, noInterface=False)
 
     print("Shortcuts: \n")
     print("Press 'escape' to display the pause menu")

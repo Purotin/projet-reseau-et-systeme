@@ -82,7 +82,7 @@ class Gui:
         # draw three buttons in the bottom right corner
         # First one is "add bob" and second is "add food"
 
-        buttonWidth = 110
+        buttonWidth = 120
         buttonHeight = 30
         buttonX = self.guiSurface.get_width() - buttonWidth - 20
         buttonY = self.guiSurface.get_height() - buttonHeight - 20
@@ -187,7 +187,7 @@ class Gui:
 
         if isinstance(objs, Edible):
             tooltipWidth = 300
-            tooltipHeight = 140
+            tooltipHeight = 160
 
             tooltip = pygame.Surface((tooltipWidth, tooltipHeight), pygame.SRCALPHA)
             pygame.draw.rect(tooltip, (0,0,0,200), (0, 0, tooltipWidth, tooltipHeight), border_radius=10)
@@ -213,8 +213,6 @@ class Gui:
             text = font.render(f"{objs.jobProperty}", True, (255,255,255))
             tooltip.blit(text, (10, 130))
             
-            text = font.render(f"Food value: {objs.value}", True, (255,255,255))
-            tooltip.blit(text, (10, 130))
             
         else:
             tooltipWidth = 300
@@ -366,7 +364,7 @@ class Gui:
             
             # draw the pause menu
             pauseMenuWidth = 300
-            pauseMenuHeight = 500
+            pauseMenuHeight = 390
     
             pauseMenu = pygame.Surface((pauseMenuWidth, pauseMenuHeight), pygame.SRCALPHA)
             pygame.draw.rect(pauseMenu, (0,0,0,200), (0, 0, pauseMenuWidth, pauseMenuHeight), border_radius=10)
@@ -378,7 +376,7 @@ class Gui:
             pauseMenu.blit(text, (pauseMenuWidth / 2 - text.get_width() / 2, 10))
     
             # draw the buttons
-            buttonWidth = 200
+            buttonWidth = 210
             buttonHeight = 50
             buttonX = pauseMenuWidth / 2 - buttonWidth / 2
             buttonY = 100
@@ -390,16 +388,16 @@ class Gui:
             self.button(buttonX, buttonY, pauseMenuOffset, buttonWidth, buttonHeight, "Resume", pauseMenu, lambda: setattr(self.game, "paused", False))
             
             # options button
-            self.button(buttonX, buttonY + buttonHeight + 10, pauseMenuOffset, buttonWidth, buttonHeight, "Options", pauseMenu, lambda : SettingsWindow(self.game.createSaveFile, self.game.loadSaveFile))
+            # self.button(buttonX, buttonY + buttonHeight + 10, pauseMenuOffset, buttonWidth, buttonHeight, "Options", pauseMenu, lambda : SettingsWindow(self.game.createSaveFile, self.game.loadSaveFile))
     
             # editor mode button
-            self.button(buttonX, buttonY + 2 * (buttonHeight + 10), pauseMenuOffset, buttonWidth, buttonHeight, "Editor mode", pauseMenu, lambda : [setattr(self.game, "editorMode", not self.game.editorMode), setattr(self, "displayPauseMenu", not getattr(self, "displayPauseMenu")), setattr(self.game, "renderHeight", False)],)
+            self.button(buttonX, buttonY + 1 * (buttonHeight + 10), pauseMenuOffset, buttonWidth, buttonHeight, "Editor mode", pauseMenu, lambda : [setattr(self.game, "editorMode", not self.game.editorMode), setattr(self, "displayPauseMenu", not getattr(self, "displayPauseMenu")), setattr(self.game, "renderHeight", False)],)
 
             # Follow best bob button
-            self.button(buttonX, buttonY + 3 * (buttonHeight + 10), pauseMenuOffset, buttonWidth, buttonHeight, "Follow best bob", pauseMenu, self.followBestBobButtonWithCooldown)
+            self.button(buttonX, buttonY + 2 * (buttonHeight + 10), pauseMenuOffset, buttonWidth, buttonHeight, "Follow best bob", pauseMenu, self.followBestBobButtonWithCooldown)
             
             # quit button
-            self.button(buttonX, buttonY + 4 * (buttonHeight + 10), pauseMenuOffset, buttonWidth, buttonHeight, "Quit", pauseMenu, lambda : setattr(self.game, "running", False))
+            self.button(buttonX, buttonY + 3 * (buttonHeight + 10), pauseMenuOffset, buttonWidth, buttonHeight, "Quit", pauseMenu, lambda : setattr(self.game, "running", False))
     
 
             self.guiSurface.blit(pauseMenu, (self.guiSurface.get_width() / 2 - pauseMenuWidth / 2, self.guiSurface.get_height() / 2 - pauseMenuHeight / 2))

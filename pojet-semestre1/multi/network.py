@@ -283,10 +283,10 @@ class Network:
                     Network.grid.removeAllBobs(uuid.UUID(message[1]))
                 
                 case "RemoveFood":
-                    Network.grid.removeFoodAt(int(message[1]), int(message[2]), uuid.UUID(message[3]))
+                    Network.grid.removeFoodAt(float(message[1]), float(message[2]), uuid.UUID(message[3]))
                     
                 case "RemoveBob":
-                    Network.grid.removeAllBobsAt(int(message[1]), int(message[2]), uuid.UUID(message[3]))
+                    Network.grid.removeAllBobsAt(float(message[1]), float(message[2]), uuid.UUID(message[3]))
                     
                 case "RemoveAllFoods":
                     Network.grid.removeAllEdibles(uuid.UUID(message[1]))

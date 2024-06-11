@@ -58,9 +58,13 @@ class Cell:
         self.bobs.append(bob)
 
     # Remove a Bob object from the cell of bobs by its ID
-    def removeBob(self, bobID=None):
+    def removeBob(self, bobID=None, noMessage = False):
         if bobID is None:
             self.bobs = []
+
+        if not noMessage:
+            Network.sendForceRemoveEntity(bobID)
+
         self.bobs = list(filter(lambda x: x.id != bobID, self.bobs))
 
     # Add an Edible object to the cell

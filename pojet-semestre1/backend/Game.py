@@ -79,7 +79,7 @@ class Game:
             networkArgs = Network.processConnectionResponse(message)
 
             # Création de la grille à partir des données reçues
-            grid = Grid(networkArgs["gridSize"], 0, 0)
+            grid = Grid(networkArgs["gridSize"], 10, 50)
             for bob in networkArgs["bobs"]:
                 grid.addBob(Bob(x=bob["x"], y=bob["y"], ID=bob["id"], mass=bob["mass"], energy=bob["energy"], Nproperty=bob["networkProperty"], Jproperty=bob["jobProperty"]))
         
