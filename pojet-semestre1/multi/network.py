@@ -487,7 +487,7 @@ class Network:
 
     def sendFoodUpdate(food):   # {Food;id;positionX;positionY;NewValue}
         # Envoie la nouvelle valeur de la nourriture
-        message = f"Food;{food.x};{food.y};{food.value}{food.networkProperty}"
+        message = f"Food;{food.x};{food.y};{food.value};{food.networkProperty}"
         Network.sendMessage(message)
         
     def sendRemoveFoodAt(x,y):   #  {RemoveFood;X;Y;ID}

@@ -919,7 +919,7 @@ class Grid:
 
     def processMateResponse(self, b2_attributes):
         # On met à jour ses statistiques
-        b2 = Network.grid.findEntityById(b2_attributes[0])
+        b2 = Network.grid.findEntityById(uuid.UUID(b2_attributes[0]))
 
         # On supprime le bob s'il n'a pas été trouvé par le détenteur de la propriété réseau
         if b2_attributes == -1 or b2_attributes == None:
@@ -988,7 +988,7 @@ class Grid:
         print("\n\n\nBadjou\n\n\n")
 
         for couple in Network.actionsInProgress["EatFood"]:
-            
+
             print("\n\n\n\n",couple[0].id, uuid.UUID(message[0]),"\n\n\n\n")
             if couple[0].id == uuid.UUID(message[0]):
                 food = couple[0]
