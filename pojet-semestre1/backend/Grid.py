@@ -989,7 +989,7 @@ class Grid:
     
     def processEatFoodResponse(self, message):
         for couple in Network.actionsInProgress["mate"]:
-            if couple[0] == uuid.UUID(message[0]):
+            if couple[0].id == uuid.UUID(message[0]):
                 food = couple[0]
                 bob = couple[1]
         food.networkProperty = Network.uuid_player
