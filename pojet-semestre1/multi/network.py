@@ -250,21 +250,23 @@ class Network:
                         
                         for couple in Network.actionsInProgress["Mate"]:
                             if couple[0].id == uuid.UUID(message[1]):
-                                Network.actionsInProgress["Mate"].remove(couple)
                                 Network.grid.processMateResponse(message[1:])
+                                Network.actionsInProgress["Mate"].remove(couple)
+                                
                         
                     case "EatBobResponse":
                         for couple in Network.actionsInProgress["EatBob"]:
                             if couple[0].id == uuid.UUID(message[1]):
-                                Network.actionsInProgress["EatBob"].remove(couple)
                                 Network.grid.processEatBobResponse(message[1:])
+                                Network.actionsInProgress["EatBob"].remove(couple)
+                                
                             
                     case "EatFoodResponse":
-                        print("\n\n\n", message[1], "\n\n\n")
                         for couple in Network.actionsInProgress["EatFood"]:
                             if couple[0].id == uuid.UUID(message[1]):
-                                Network.actionsInProgress["EatFood"].remove(couple)
                                 Network.grid.processEatFoodResponse(message[1:])
+                                Network.actionsInProgress["EatFood"].remove(couple)
+                                
             
             else:
                 if message[1] not in all_id:

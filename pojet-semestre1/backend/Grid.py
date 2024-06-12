@@ -985,7 +985,11 @@ class Grid:
         Network.sendBobUpdate(bob)
     
     def processEatFoodResponse(self, message):
+        print("\n\n\nBadjou\n\n\n")
+
         for couple in Network.actionsInProgress["EatFood"]:
+            
+            print("\n\n\n\n",couple[0].id, uuid.UUID(message[0]),"\n\n\n\n")
             if couple[0].id == uuid.UUID(message[0]):
                 food = couple[0]
                 bob = couple[1]
