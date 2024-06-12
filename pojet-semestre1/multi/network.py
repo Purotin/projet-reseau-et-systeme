@@ -249,21 +249,21 @@ class Network:
                     case "MateResponse":
                         
                         for couple in Network.actionsInProgress["Mate"]:
-                            if couple[0].id == message[1]:
+                            if couple[0].id == uuid.UUID(message[1]):
                                 Network.actionsInProgress["Mate"].remove(couple)
                                 Network.grid.processMateResponse(message[1:])
                         
                     case "EatBobResponse":
                         for couple in Network.actionsInProgress["EatBob"]:
-                            if couple[0].id == message[1]:
+                            if couple[0].id == uuid.UUID(message[1]):
                                 Network.actionsInProgress["EatBob"].remove(couple)
                                 Network.grid.processEatBobResponse(message[1:])
                             
                     case "EatFoodResponse":
+                        print("\n\n\n", message[1], "\n\n\n")
                         for couple in Network.actionsInProgress["EatFood"]:
-                            if couple[0].id == message[1]:
+                            if couple[0].id == uuid.UUID(message[1]):
                                 Network.actionsInProgress["EatFood"].remove(couple)
-                                print("\n\n\nCON QUI PUE\n\n\n")
                                 Network.grid.processEatFoodResponse(message[1:])
             
             else:

@@ -936,7 +936,7 @@ class Grid:
         b2.perception = float(b2_attributes[5])
         b2.memorySize = float(b2_attributes[6])
 
-        for couple in Network.actionsInProgress["mate"]:
+        for couple in Network.actionsInProgress["Mate"]:
             if couple[0] == b2.id:
                 b1 = couple[1]
 
@@ -968,7 +968,7 @@ class Grid:
         Network.sendBobUpdate(b2)
         
     def processEatBobResponse(self, message):
-        for couple in Network.actionsInProgress["mate"]:
+        for couple in Network.actionsInProgress["EatBob"]:
             if couple[0] == uuid.UUID(message[0]):
                 otherBob = couple[0]
                 bob = couple[1]
@@ -982,13 +982,10 @@ class Grid:
         # Set the actions of the two Bob objects
         bob.action = "eat"
 
-        otherBob.networkProperty = Network.uuid_player
-
-        Network.sendBobUpdate(otherBob)
         Network.sendBobUpdate(bob)
     
     def processEatFoodResponse(self, message):
-        for couple in Network.actionsInProgress["mate"]:
+        for couple in Network.actionsInProgress["EatFood"]:
             if couple[0].id == uuid.UUID(message[0]):
                 food = couple[0]
                 bob = couple[1]
