@@ -11,7 +11,7 @@ if __name__ == "__main__":
     Network.selectServer()
     pseudo = input("Enter your playername: ")
     strUuid = str(Network.uuid_player)
-    Network.Playerlist[strUuid] = [pseudo, 0]
+    Network.playerList[strUuid] = [pseudo, 0]
     game = Game(grid_size=50, screenWidth=1080, screenHeight=750, dayLimit=0, noInterface=False)
 
     print("Shortcuts: \n")

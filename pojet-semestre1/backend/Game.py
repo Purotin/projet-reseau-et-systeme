@@ -92,6 +92,10 @@ class Game:
 
             # Création de la grille à partir de la taille donnée en argument du constructeur
             grid = Grid(grid_size, 0, 0)
+            
+        messagePlayerList = Network.timeout(5,Network.recvPlayerList)
+        if messagePlayerList is not None:
+            Network.processPlayerList(messagePlayerList)
 
         # ⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️ FIN DE LA CONNEXION AU RÉSEAU ⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️⬆️
 

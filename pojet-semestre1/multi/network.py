@@ -10,7 +10,7 @@ class Network:
     uuid_player = uuid.uuid4()
     grid = None
     recvMessageBuffer = ""
-    Playerlist = {}
+    playerList = {}
 
     messagesBuffer = ""
     connected = False
@@ -85,7 +85,7 @@ class Network:
         # Envoyer la requête de connexion
         strUuid = str(Network.uuid_player)
         Network.pipes = PipeHandler()
-        Network.sendDirectMessage("ConnectionRequest;"+strUuid + ";" + Network.Playerlist[strUuid][0])
+        Network.sendDirectMessage("ConnectionRequest;"+strUuid + ";" + Network.playerList[strUuid][0])
    
     def processConnectionRequest(message):
         """ Traite la requête de connexion à la partie en cours
@@ -104,8 +104,8 @@ class Network:
         game_info = Network.grid.getGameInfo()
         
         reponse = "ConnectionResponse;"+message[1]+";"+strUuid+";"+game_info
-        Network.sendMessage(reponse)
-        Network.sendPlayerlist(message[1], message[-1])
+        Network.sendDirectMessage(reponse)
+        Network.sendplayerList(message[1], message[-1])
         if Network.game.paused == True:
             Network.game.wasPaused = False
         Network.game.paused = True
@@ -122,32 +122,44 @@ class Network:
             if message[0] == "ConnectionResponse" and message[1] == str(Network.uuid_player):
                 return message
         return None
+    
+    def recvPlayerList():
+        """
+            Attendre la réponse de la connexion et retourne la réponse sinon None
+        """
+        messageList = Network.processBuffer()
+        for message in messageList:
+            length = len(message)
+            message = message.split(";")
+            if message[0] == "playerListResponse":
+                return message
+        return None
      
 
-    def sendPlayerlist(uid, pseudo):
-        messageplayers = "PlayerlistResponse;"+ uid
-        for playerinfo in Network.Playerlist.keys():
-            messageplayers +=  ";" + str(playerinfo) + ";" + str(Network.Playerlist[playerinfo][0]) + ";" + str(Network.Playerlist[playerinfo][1])
-        Network.Playerlist[uid] = [pseudo, str(len(Network.Playerlist)+1)]
+    def sendplayerList(uid, pseudo):
+        messageplayers = "playerListResponse;"+ uid
+        for playerinfo in Network.playerList.keys():
+            messageplayers +=  ";" + str(playerinfo) + ";" + str(Network.playerList[playerinfo][0]) + ";" + str(Network.playerList[playerinfo][1])
+        Network.playerList[uid] = [pseudo, str(len(Network.playerList)+1)]
         Network.sendDirectMessage(messageplayers)
         
 
-    def recvPlayerlist(message):
+    def processplayerList(message):
         print("c'est entré")
         strUuid = str(Network.uuid_player)
         if (strUuid == message[1]):
-            playerlist = message[2:]
+            playerList = message[2:]
             max = 0
-            for i in range(0,len(playerlist), 3):
-                playeruid = message[i]
-                player_name_number = [message[i+1], message[i+2]]
-                if (max < int(message[i+2])):
-                    max = int(message[i+2])
-                Network.PlayerList[playeruid] = player_name_number
+            for i in range(0,len(playerList), 3):
+                playeruid = playerList[i]
+                player_name_number = [playerList[i+1], playerList[i+2]]
+                if (max < int(playerList[i+2])):
+                    max = int(playerList[i+2])
+                Network.playerList[playeruid] = player_name_number
 
-            Network.Playerlist[strUuid].append(str(max+1))
-            print("Playerlist actualisée :")
-            print(Network.Playerlist)
+            Network.playerList[strUuid].append(str(max+1))
+            print("playerList actualisée :")
+            print(Network.playerList)
 
             
 
@@ -336,14 +348,10 @@ class Network:
             header = message[0]
 
             if Network.connected == False and header == "ConnectionResponse":
-                Network.processConnectionResponse(message)
+                    Network.processConnectionResponse(message)
 
             else :
                 match header:
-
-                    case "PlayerlistResponse":
-                        print("c'est bien case")
-                        Network.recvPlayerlist(message)
 
                     case "ConnectionRequest":
                         Network.processConnectionRequest(message)
