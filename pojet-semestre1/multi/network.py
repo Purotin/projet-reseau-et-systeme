@@ -157,7 +157,7 @@ class Network:
                     max = int(playerList[i+2])
                 Network.playerList[playeruid] = player_name_number
 
-            Network.playerList[strUuid].append(str(max+1))
+            Network.playerList[strUuid][1] = str(max+1)
             print("playerList actualisée :")
             print(Network.playerList)
 
