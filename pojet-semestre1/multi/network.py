@@ -230,6 +230,7 @@ class Network:
         """
             Attendre la réponse de tout les actions du jeu et process les messages reçus
         """
+
         
         allMessages = Network.processBuffer()
         gameActionsHeaders = ["MateResponse", "EatBobResponse", "EatFoodResponse"]
@@ -263,6 +264,7 @@ class Network:
                         for couple in Network.actionsInProgress["EatFood"]:
                             if message[2] == Network.uuid_player and couple[0].id == message[1]:
                                 Network.actionsInProgress["EatFood"].remove(couple)
+                                print("\n\n\nCON QUI PUE\n\n\n")
                                 Network.grid.processEatFoodResponse(message[1:])
             
             else:

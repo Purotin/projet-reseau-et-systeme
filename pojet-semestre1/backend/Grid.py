@@ -911,9 +911,9 @@ class Grid:
                 Network.sendMessage(response)
 
             elif isinstance(entity, Bob):
-                response = f"EatBobReponse;{entity.id};{message[1]}"
+                response = f"EatBobReponse;{entity.id};{message[2]}"
             elif isinstance(entity, Food):
-                response = f"EatFoodResponse;{entity.id};{message[1]}"
+                response = f"EatFoodResponse;{entity.id};{message[2]}"
 
             Network.sendMessage(response)
 
